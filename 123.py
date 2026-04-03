@@ -64,7 +64,7 @@ def start_serveo():
             print(f"> {line}") # Видим всё, что пишет сервер
 
             # Ищем заветную ссылку https://....serveo.net
-            match = re.search(r"https://[a-zA-Z0-9.-]+\.serveo\.net", line)
+            match = re.search(r"https://[a-zA-Z0-9.-]+\.(serveo\.net|serveousercontent\.com)", line)
             if match and not url_found:
                 url = match.group(0)
                 update_files(url)
