@@ -1,212 +1,68 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>TITANIUM | Premium Dashboard</title>
-    <style>
-        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --border: #1a1a2e; --text: #888; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 60px 1fr; height: 100vh; overflow: hidden; }
-        
-        .header { grid-column: 1 / -1; background: #080810; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; padding: 0 25px; gap: 15px; }
-        .header a { color: var(--text); text-decoration: none; font-size: 12px; border: 1px solid var(--border); padding: 5px 15px; border-radius: 4px; }
+<script>
+    // 1. Укажи СВОЙ актуальный адрес Ngrok
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    const user = localStorage.getItem('username');
 
-        .sidebar { background: var(--card); border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 12px; }
-        .stat { font-size: 13px; color: var(--text); display: flex; justify-content: space-between; border-bottom: 1px solid #111; padding-bottom: 5px; }
-        .stat span { color: #fff; font-weight: bold; }
+    // Если в локальном хранилище пусто - на выход
+    if(!user) { window.location.href = 'login.html'; }
 
-        .main-layout { display: grid; grid-template-columns: 1fr 380px; padding: 20px; gap: 20px; overflow: hidden; }
-
-        /* МАРКЕТПЛЕЙС */
-        .market-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 10px; }
-        .topic { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
-        .topic img { width: 100%; height: 200px; object-fit: cover; background: #000; }
-        .topic-body { padding: 20px; }
-        .topic-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--primary); }
-        .topic-desc { font-size: 14px; color: #ccc; margin-bottom: 15px; line-height: 1.5; }
-        .topic-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1a1a2e; padding-top: 15px; }
-
-        /* ЧАТ */
-        .chat-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; height: 100%; }
-        #chat-content { flex: 1; overflow-y: auto; padding: 15px; font-size: 13px; }
-        .msg { margin-bottom: 10px; border-left: 2px solid #333; padding-left: 10px; }
-        .msg b { color: var(--primary); font-size: 11px; display: block; }
-        .chat-input { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-        .chat-input input { flex: 1; background: #000; border: 1px solid #222; color: #fff; padding: 10px; border-radius: 5px; }
-
-        /* РУЛЕТКА */
-        #case-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
-        .case-window { width: 600px; height: 150px; border: 2px solid var(--primary); overflow: hidden; position: relative; background: #080810; margin: 20px 0; }
-        .case-tape { display: flex; width: 10000px; transition: 5s cubic-bezier(0.15, 0, 0.05, 1); transform: translateX(0); }
-        .case-item { min-width: 120px; height: 150px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #1a1a2e; font-weight: bold; font-size: 14px; }
-        .case-line { position: absolute; left: 50%; top: 0; width: 2px; height: 100%; background: #ff4b4b; z-index: 5; }
-
-        /* МОДАЛКА СОЗДАНИЯ */
-        .modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border:1px solid var(--primary); padding:30px; border-radius:15px; z-index:1000; width:450px; }
-        input, textarea { width: 100%; margin-bottom: 15px; background: #05050a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn { background: var(--primary); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-buy { background: #4caf50; }
-        .btn-dl { background: #f4b400; color: #000; }
-        .rainbow { background: linear-gradient(90deg, #ff0000, #ff7f00, #00ff00, #0000ff); background-size: 400%; animation: move 5s linear infinite; }
-        @keyframes move { 0%{background-position:0%} 100%{background-position:400%} }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <a href="#" onclick="document.getElementById('create-modal').style.display='block'">+ CREATE TOPIC</a>
-        <a href="settings.html">SETTINGS</a>
-        <a href="admin.html" id="adm-btn" style="display:none; color:red;">ADMIN</a>
-    </div>
-
-    <div class="sidebar">
-        <h2 style="color:var(--primary); letter-spacing:4px; margin-bottom:20px;">TITANIUM</h2>
-        <div class="stat">UID <span id="u-uid">#--</span></div>
-        <div class="stat">ROLE <span id="u-role">USER</span></div>
-        <div class="stat">HWID <span id="u-hwid">LOADING</span></div>
-        <div class="stat">BALANCE <span id="u-bal" style="color:#4caf50;">0₽</span></div>
-        <button class="btn rainbow" style="margin-top:20px;" onclick="document.getElementById('case-modal').style.display='flex'">OPEN DAILY CASE</button>
-    </div>
-
-    <div class="main-layout">
-        <div class="market-scroll" id="market-list">
-            </div>
-
-        <div class="chat-wrap">
-            <div style="padding:15px; border-bottom:1px solid #1a1a2e; font-weight:bold; font-size:12px; color:var(--primary);">COMMUNITY FORUM</div>
-            <div id="chat-content"></div>
-            <div class="chat-input">
-                <input type="text" id="chat-msg" placeholder="Введите сообщение...">
-                <button class="btn" onclick="sendMsg()">></button>
-            </div>
-        </div>
-    </div>
-
-    <div id="case-modal">
-        <h2 style="letter-spacing:5px;">TITANIUM CASE</h2>
-        <div class="case-window">
-            <div class="case-line"></div>
-            <div id="tape" class="case-tape"></div>
-        </div>
-        <button class="btn" id="spin-btn" onclick="startSpin()">START SPIN</button>
-        <button onclick="document.getElementById('case-modal').style.display='none'" style="background:none; border:none; color:grey; margin-top:15px; cursor:pointer;">Закрыть</button>
-    </div>
-
-    <div id="create-modal" class="modal">
-        <h3>NEW MARKET TOPIC</h3>
-        <input type="text" id="t-title" placeholder="Название темы">
-        <textarea id="t-desc" placeholder="Описание товара/услуги" rows="4"></textarea>
-        <input type="text" id="t-img" placeholder="Ссылка на фото (URL)">
-        <input type="number" id="t-price" placeholder="Цена (₽)">
-        <input type="text" id="t-dl" placeholder="Ссылка на скачивание (workupload...)">
-        <button class="btn" style="width:100%" onclick="createTopic()">ОПУБЛИКОВАТЬ</button>
-        <button onclick="this.parentElement.style.display='none'" style="width:100%; background:none; border:none; color:grey; margin-top:10px; cursor:pointer;">Отмена</button>
-    </div>
-
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const user = localStorage.getItem('username');
-        let userPurchases = [];
-
-        async function sync() {
-            const r = await fetch(`${API}/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user, password:""})});
+    async function sync() {
+        try {
+            const r = await fetch(`${API}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: user, password: ""}) // Авто-проверка сессии
+            });
             const d = await r.json();
+
+            if(d.status === "error") {
+                // Если сервер не знает этого юзера (база очищена), удаляем мусор и выходим
+                localStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Обновляем UI
             document.getElementById('u-uid').innerText = "#" + d.uid;
-            document.getElementById('u-role').innerText = d.is_admin ? "ADMIN" : "USER";
-            document.getElementById('u-hwid').innerText = d.hwid;
             document.getElementById('u-bal').innerText = d.balance + "₽";
-            userPurchases = d.purchases || [];
-            if(d.is_admin) document.getElementById('adm-btn').style.display = "inline";
-            loadMarket();
+            document.getElementById('u-hwid').innerText = d.hwid;
+            
+            loadMarket(d.purchases);
+        } catch(e) {
+            console.error("Ошибка связи с сервером");
+        }
+    }
+
+    async function loadMarket(purchases = []) {
+        const r = await fetch(`${API}/api/market`);
+        const items = await r.json();
+        const container = document.getElementById('market-list');
+        
+        if (items.length === 0) {
+            container.innerHTML = "<p style='color:gray; padding:20px;'>Маркетплейс пуст. Создайте первый топик!</p>";
+            return;
         }
 
-        async function loadMarket() {
-            const r = await fetch(`${API}/api/market`);
-            const items = await r.json();
-            document.getElementById('market-list').innerHTML = items.map(i => {
-                const isBought = userPurchases.includes(i.id);
-                return `
-                <div class="topic">
-                    <img src="${i.img}">
-                    <div class="topic-body">
-                        <div class="topic-title">${i.title}</div>
-                        <div class="topic-desc">${i.desc}</div>
-                        <div class="topic-footer">
-                            <span style="font-size:12px; color:#555">Автор: ${i.author} | ${i.date}</span>
-                            ${isBought ? 
-                                `<button class="btn btn-dl" onclick="window.open('${i.download_url}')">DOWNLOAD</button>` : 
-                                `<button class="btn btn-buy" onclick="buy('${i.id}', ${i.price})">BUY FOR ${i.price}₽</button>`
-                            }
-                        </div>
+        container.innerHTML = items.map(i => `
+            <div class="topic">
+                <img src="${i.img}">
+                <div class="topic-content">
+                    <div class="topic-title">${i.title}</div>
+                    <div style="font-size:13px; color:#888;">${i.desc}</div>
+                    <div class="topic-footer">
+                        <span style="color:#4caf50; font-weight:bold;">${i.price}₽</span>
+                        ${purchases.includes(i.id) ? 
+                            `<button class="btn btn-dl" onclick="window.open('${i.file_url}')">СКАЧАТЬ</button>` :
+                            `<button class="btn" onclick="buy('${i.id}')">КУПИТЬ</button>`
+                        }
                     </div>
                 </div>
-            `}).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        async function createTopic() {
-            const data = {
-                title: document.getElementById('t-title').value,
-                desc: document.getElementById('t-desc').value,
-                img: document.getElementById('t-img').value,
-                price: document.getElementById('t-price').value,
-                download_url: document.getElementById('t-dl').value,
-                author: user
-            };
-            await fetch(`${API}/api/market/add`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-            document.getElementById('create-modal').style.display = 'none';
-            sync();
-        }
-
-        async function buy(id, price) {
-            if(!confirm(`Купить за ${price}₽?`)) return;
-            const r = await fetch(`${API}/api/market/buy`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user, item_id:id})});
-            const d = await r.json();
-            if(d.status === "success") sync();
-            else alert(d.message);
-        }
-
-        // --- ЧАТ ---
-        async function loadChat() {
-            const r = await fetch(`${API}/api/chat`);
-            const msgs = await r.json();
-            document.getElementById('chat-content').innerHTML = msgs.map(m => `
-                <div class="msg"><b>${m.user} [${m.time}]</b> ${m.text}</div>
-            `).join('');
-        }
-
-        async function sendMsg() {
-            const text = document.getElementById('chat-msg').value;
-            if(!text) return;
-            await fetch(`${API}/api/chat/send`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user, text})});
-            document.getElementById('chat-msg').value = "";
-            loadChat();
-        }
-
-        // --- КЕЙС ---
-        function startSpin() {
-            const tape = document.getElementById('tape');
-            const items = ["50₽", "100₽", "250₽", "TRY AGAIN", "10₽", "500₽", "50₽", "TRY AGAIN"];
-            let html = "";
-            for(let i=0; i<60; i++) {
-                let prize = items[Math.floor(Math.random()*items.length)];
-                html += `<div class="case-item" style="color:${prize.includes('₽') ? '#4caf50':'#ff4b4b'}">${prize}</div>`;
-            }
-            tape.innerHTML = html;
-            tape.style.transition = "none";
-            tape.style.transform = "translateX(0)";
-            
-            setTimeout(async () => {
-                tape.style.transition = "5s cubic-bezier(0.15, 0, 0.05, 1)";
-                const x = -(Math.floor(Math.random() * 500) + 4500);
-                tape.style.transform = `translateX(${x}px)`;
-                
-                const r = await fetch(`${API}/api/spin`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user})});
-                const d = await r.json();
-                setTimeout(() => { alert("Вы выиграли: " + d.win); sync(); }, 5200);
-            }, 100);
-        }
-
-        sync(); loadChat();
-        setInterval(loadChat, 3000);
-    </script>
-</body>
-</html>
+    // Запуск функций
+    sync();
+    loadChat(); // функция из предыдущего кода
+    setInterval(loadChat, 5000);
+</script>
