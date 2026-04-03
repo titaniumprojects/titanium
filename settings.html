@@ -4,90 +4,31 @@
     <meta charset="UTF-8">
     <title>TITANIUM | Настройки</title>
     <style>
-        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --text: #ffffff; --nav: #080810; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 100px; display: flex; flex-direction: column; align-items: center; }
-
-        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--nav); display: flex; align-items: center; justify-content: space-between; padding: 0 50px; box-sizing: border-box; border-bottom: 1px solid #1a1a2e; }
-        .nav-logo { font-weight: bold; color: var(--primary); letter-spacing: 2px; text-decoration: none; }
-        .nav-links a { color: #888; text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
-        
-        .settings-container { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 400px; text-align: center; }
-        .setting-item { margin-bottom: 20px; text-align: left; }
-        label { font-size: 0.8rem; color: #888; display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 12px; background: #1a1a2e; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--primary); }
-        
-        .save-btn { background: var(--primary); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .save-btn:hover { background: #4a56d4; transform: translateY(-2px); }
-        
-        .logout-link { margin-top: 25px; color: #555; text-decoration: none; font-size: 0.8rem; display: block; cursor: pointer; }
-        .logout-link:hover { color: #ff4d4d; }
+        body { background: #05050a; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 100px; }
+        .box { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 350px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #5f6eff; border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .logout { margin-top: 20px; color: #ff4b4b; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-
-    <nav class="navbar">
-        <a href="home.html" class="nav-logo">TITANIUM</a>
-        <div class="nav-links">
-            <a href="home.html">ГЛАВНАЯ</a>
-            <a href="settings.html" style="color: white;">НАСТРОЙКИ</a>
-        </div>
-    </nav>
-
-    <div class="settings-container">
-        <h2 style="margin-top: 0;">НАСТРОЙКИ</h2>
-        
-        <div class="setting-item">
-            <label>ВАШ ЛОГИН</label>
-            <input type="text" id="set-user" readonly style="opacity: 0.6; cursor: not-allowed;">
-        </div>
-
-        <div class="setting-item">
-            <label>НОВЫЙ ПАРОЛЬ</label>
-            <input type="password" id="new-password" placeholder="Минимум 4 символа">
-        </div>
-
-        <button class="save-btn" onclick="changePassword()">СОХРАНИТЬ ПАРОЛЬ</button>
-        
-        <span class="logout-link" onclick="logout()">Выйти из аккаунта</span>
+    <div class="box">
+        <h3>НАСТРОЙКИ</h3>
+        <label>Новый пароль</label>
+        <input type="password" id="new-p" placeholder="Введите пароль">
+        <button class="btn" onclick="save()">СОХРАНИТЬ ПАРОЛЬ</button>
+        <center><div class="logout" onclick="localStorage.clear(); location.href='login.html'">Выйти из аккаунта</div></center>
     </div>
-
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const user = localStorage.getItem('username');
-        
-        if (!user) window.location.href = "login.html";
-        document.getElementById('set-user').value = user;
-
-        async function changePassword() {
-            const newPwd = document.getElementById('new-password').value.trim();
-            
-            if (newPwd.length < 4) {
-                return alert("Пароль слишком короткий!");
-            }
-
-            try {
-                const res = await fetch(`${API}/admin/update_password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, password: newPwd })
-                });
-                const data = await res.json();
-
-                if (data.status === "success") {
-                    alert("Пароль успешно изменен!");
-                    document.getElementById('new-password').value = "";
-                } else {
-                    alert("Ошибка: " + data.message);
-                }
-            } catch (e) {
-                alert("Нет связи с сервером");
-            }
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = "login.html";
+        async function save() {
+            const p = document.getElementById('new-p').value;
+            if(p.length < 4) return alert("Короткий!");
+            const r = await fetch(`${API}/admin/update_password`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({username: localStorage.getItem('username'), password: p})
+            });
+            if(r.ok) alert("Успешно!");
         }
     </script>
 </body>
