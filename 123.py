@@ -2,16 +2,19 @@ import os
 import re
 import subprocess
 import time
+import requests
 
 # --- НАСТРОЙКИ ---
+# ВСТАВЬ СВОЙ ТОКЕН НИЖЕ (в кавычках)
+# Взять тут: https://dashboard.ngrok.com/get-started/your-authtoken
+NGROK_TOKEN = "3BqjXitIFw8B84jFdkyYudSK8GV_5NoXRoJ52P1Lg2bbEs2jR" 
+
 PORT = 8000
-# Список всех файлов, где нужно менять ссылку
 HTML_FILES = ["login.html", "register.html", "home.html", "store.html", "settings.html", "admin.html"]
 
 def update_files(new_url):
-    print(f"\n[!] Новая ссылка от Serveo: {new_url}")
-    
-    # Регулярное выражение: ищет const API = "любой_адрес";
+    print(f"\n[!] Новая ссылка от Ngrok: {new_url}")
+    # Ищем строку const API = "..." во всех файлах
     pattern = r'const\s+API\s*=\s*["\']https?://[^"\']+["\']\s*;?'
     replacement = f'const API = "{new_url}";'
 
@@ -27,60 +30,90 @@ def update_files(new_url):
                     f.write(new_content)
                 print(f"[+] ОБНОВЛЕНО: {file_name}")
                 updated_count += 1
-            else:
-                print(f"[-] Пропуск: {file_name} (строка const API не найдена)")
     
     if updated_count > 0:
         print("\n" + "="*50)
-        print("УСПЕХ! Ссылки обновлены локально.")
-        print("Теперь зайди в GitHub Desktop и сделай PUSH.")
-        print(f"Твой API теперь тут: {new_url}")
+        print("ГОТОВО! Теперь сделай COMMIT и PUSH в GitHub Desktop.")
+        print(f"Актуальная ссылка: {new_url}")
         print("="*50)
 
-def start_serveo():
-    # Пытаемся найти путь к ssh в системе
-    ssh_path = os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), 'System32', 'OpenSSH', 'ssh.exe')
-    if not os.path.exists(ssh_path):
-        ssh_path = "ssh" # Если по точному пути нет, надеемся на переменную PATH
-
-    print(f"Запуск туннеля через {ssh_path}...")
+def start_ngrok():
+    # Указываем точный путь к твоему ngrok.exe
+    ngrok_path = r"C:\Users\Lenovo\Desktop\Titanium_Project\server\ngrok.exe"
     
-    # Команда запуска туннеля
-    # -o StrictHostKeyChecking=no чтобы не спрашивал подтверждение (по возможности)
-    # -R 80:localhost:8000 перенаправляет порт 8000 на сервер serveo.net
+    if not os.path.exists(ngrok_path):
+        print(f"[!] ОШИБКА: Файл не найден по пути {ngrok_path}")
+        return
+
+    # Привязываем токен
+    print("Авторизация Ngrok...")
+    subprocess.run([ngrok_path, "config", "add-authtoken", NGROK_TOKEN])
+    
+    print("Запуск Ngrok туннеля...")
+    # Запускаем Ngrok
     process = subprocess.Popen(
-        [ssh_path, "-o", "StrictHostKeyChecking=no", "-R", "80:localhost:8000", "serveo.net"],
+        [ngrok_path, "http", str(PORT)],
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding="utf-8",
-        bufsize=1
+        stderr=subprocess.STDOUT
     )
 
-    url_found = False
+    # Даем время на запуск
+    time.sleep(4)
+    
     try:
-        for line in process.stdout:
-            line = line.strip()
-            print(f"> {line}") # Видим всё, что пишет сервер
-
-            # Ищем заветную ссылку https://....serveo.net
-            match = re.search(r"https://[a-zA-Z0-9.-]+\.(serveo\.net|serveousercontent\.com)", line)
-            if match and not url_found:
-                url = match.group(0)
-                update_files(url)
-                url_found = True
-                print("\n[ИНФО] Туннель активен. Не закрывай это окно!")
+        # Получаем ссылку через локальный API Ngrok
+        response = requests.get("http://127.0.0.1:4040/api/tunnels")
+        data = response.json()
+        public_url = data['tunnels'][0]['public_url']
+        
+        # GitHub Pages любит HTTPS
+        if public_url.startswith("http://"):
+            public_url = public_url.replace("http://", "https://")
             
-            # Если SSH попросит ручное подтверждение (иногда бывает)
-            if "Are you sure you want to continue" in line:
-                print("\n[!!!] ВНИМАНИЕ: Введи 'yes' прямо в этой консоли и нажми Enter!")
+        update_files(public_url)
+    except Exception as e:
+        print(f"\n[ОШИБКА] Не удалось достать ссылку. Убедись, что порт {PORT} свободен.")
+        print(f"Детали: {e}")
 
+    try:
         process.wait()
     except KeyboardInterrupt:
-        print("\n[!] Выключение туннеля...")
+        print("\nВыключение...")
+        process.terminate()
+    
+    print("Запуск Ngrok туннеля...")
+    # Запускаем Ngrok в фоновом режиме
+    process = subprocess.Popen(
+        ["ngrok", "http", str(PORT)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
+    # Даем время на запуск и получение ссылки
+    time.sleep(3)
+    
+    try:
+        # Ngrok имеет внутренний API на порту 4040, достаем ссылку оттуда
+        response = requests.get("http://127.0.0.1:4040/api/tunnels")
+        data = response.json()
+        public_url = data['tunnels'][0]['public_url']
+        
+        # Если ссылка на http, меняем на https для GitHub
+        if public_url.startswith("http://"):
+            public_url = public_url.replace("http://", "https://")
+            
+        update_files(public_url)
+    except Exception as e:
+        print(f"\n[ОШИБКА] Не удалось получить ссылку: {e}")
+        print("Проверь, что Ngrok установлен и запущен.")
+
+    try:
+        process.wait()
+    except KeyboardInterrupt:
+        print("\nВыключение...")
         process.terminate()
 
 if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("=== TITANIUM AUTO-TUNNEL (SERVEO) ===")
-    start_serveo()
+    print("=== TITANIUM AUTO-TUNNEL (NGROK) ===")
+    start_ngrok()

@@ -5,93 +5,121 @@
     <title>TITANIUM | Dashboard</title>
     <style>
         :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --border: #1a1a2e; }
-        body { 
-            background: var(--bg); color: white; font-family: sans-serif; margin: 0; 
-            display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 60px 1fr; height: 100vh; 
-        }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 60px 1fr; height: 100vh; }
         
-        .header { 
-            grid-column: 1 / -1; background: #080810; border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; justify-content: flex-end; padding: 0 25px; gap: 15px;
-        }
-        .header a { color: #888; text-decoration: none; padding: 7px 15px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; }
-        .header a:hover { color: white; border-color: var(--primary); }
+        /* Header */
+        .header { grid-column: 1 / -1; background: #080810; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; }
+        .nav-l, .nav-r { display: flex; gap: 10px; }
+        .header a { color: #888; text-decoration: none; padding: 8px 15px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; transition: 0.3s; }
+        .header a:hover { color: #fff; border-color: var(--primary); }
 
-        .sidebar { 
-            background: var(--card); border-right: 1px solid var(--border); padding: 20px; 
-            display: flex; flex-direction: column; gap: 15px; 
-        }
-        .info-box { border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.2); }
-        .label { color: #444; font-size: 10px; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        .val { font-size: 14px; margin-bottom: 12px; color: #ccc; }
+        /* Sidebar */
+        .sidebar { background: var(--card); border-right: 1px solid var(--border); padding: 20px; }
+        .profile-card { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
         
-        .content { display: flex; align-items: center; justify-content: center; padding: 40px; }
-        .loader-card { 
-            border: 1px solid var(--border); padding: 50px; border-radius: 20px; text-align: center; background: var(--card);
-            width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        /* Rainbow Button */
+        .rainbow-btn { 
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #00ff00, #0000ff, #8b00ff); 
+            background-size: 400%; animation: rb 5s linear infinite; border: none; 
+            padding: 12px; border-radius: 10px; color: white; font-weight: 900; cursor: pointer; width: 100%; margin-top: 15px;
         }
-        .dl-btn { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+        @keyframes rb { 0%{background-position:0%} 100%{background-position:400%} }
 
-        #adm-btn { display: none; background: #ff4b4b; color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-top: 10px; }
+        /* Roulette Modal */
+        #roulette-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        .tape-container { width: 600px; height: 150px; overflow: hidden; border: 2px solid var(--primary); position: relative; background: #000; border-radius: 10px; }
+        .tape { display: flex; transition: 5s cubic-bezier(0.1, 0, 0.1, 1); }
+        .prize-box { min-width: 150px; height: 150px; border: 1px solid #111; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-direction: column; }
+        .line { position: absolute; left: 50%; top: 0; width: 2px; height: 100%; background: red; z-index: 10; box-shadow: 0 0 10px red; }
     </style>
 </head>
 <body>
     <div class="header">
-        <a href="settings.html">Настройки</a>
-        <a href="home.html" style="color:white;">Главная</a>
-        <a href="store.html">Приобрести</a>
-        <a href="#" onclick="logout()" style="border-color:#ff4b4b; color:#ff4b4b;">Выход</a>
+        <div class="nav-l">
+            <a href="forum.html">ФОРУМ</a>
+            <a href="market.html">МАРКЕТПЛЕЙС</a>
+            <a href="store.html">МАГАЗИН</a>
+        </div>
+        <div class="nav-r">
+            <a href="admin.html" id="adm-btn" style="display:none; color:#ff4b4b;">ADMIN PANEL</a>
+            <a href="settings.html">Настройки</a>
+            <a href="#" onclick="logout()">Выход</a>
+        </div>
     </div>
 
     <div class="sidebar">
-        <div class="info-box">
-            <div class="label">Пользователь</div>
-            <div class="val" id="nick" style="color:white; font-weight:bold;">Загрузка...</div>
-            <div class="label">Баланс</div>
-            <div class="val" id="bal" style="color:#4caf50; font-weight:bold;">0₽</div>
-            <a href="admin.html" id="adm-btn">АДМИН ПАНЕЛЬ</a>
+        <div class="profile-card">
+            <div id="nick" style="font-size: 18px; font-weight: bold; color: var(--primary);">User</div>
+            <div id="role" style="font-size: 11px; color: #555; margin-bottom: 10px;">MEMBER</div>
+            <div style="font-size: 13px;">Баланс: <span id="bal" style="color: #4caf50;">0₽</span></div>
+            <div style="font-size: 13px;">Подписка: <span id="sub" style="color: #888;">None</span></div>
         </div>
-        <div class="info-box">
-            <div class="label">UID</div><div class="val" id="uid">#---</div>
-            <div class="label">Роль</div><div class="val" id="role" style="color:var(--primary);">User</div>
-            <div class="label">HWID</div><div class="val" style="font-size:10px; opacity:0.5;">A1-B2-C3-D4-E5</div>
-        </div>
+        <button class="rainbow-btn" onclick="openR()">ROULETTE</button>
     </div>
 
-    <div class="content">
-        <div class="loader-card">
-            <div style="font-size: 40px; margin-bottom: 20px;">💠</div>
-            <h3 style="margin-bottom: 20px;">TITANIUM LOADER</h3>
-            <button class="dl-btn" onclick="alert('Скачивание...')">СКАЧАТЬ</button>
+    <div id="roulette-modal">
+        <h2 style="letter-spacing: 3px;">DAILY CASE</h2>
+        <div class="tape-container">
+            <div class="line"></div>
+            <div id="tape" class="tape"></div>
         </div>
+        <button id="spin-btn" onclick="startSpin()" style="margin-top:30px; padding: 15px 40px; background: var(--primary); border:none; color:white; border-radius:8px; cursor:pointer; font-weight:bold;">КРУТИТЬ</button>
+        <div style="margin-top:20px; font-size:12px; color:#444; text-align:center;">
+            Шансы: Ничего (60%) | Промо (15%) | Деньги (20%) | Саб (4.5%) | Админка (0.1%)
+        </div>
+        <button onclick="document.getElementById('roulette-modal').style.display='none'" style="background:none; border:none; color:grey; margin-top:15px; cursor:pointer;">Закрыть</button>
     </div>
 
     <script>
-        const API = "https://console.serveo.net";
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         const user = localStorage.getItem('username');
         if(!user) location.href = "login.html";
 
         async function sync() {
-            try {
-                const r = await fetch(`${API}/login`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: user, password: ""})
-                });
-                const d = await r.json();
-                
-                document.getElementById('nick').innerText = user;
-                document.getElementById('bal').innerText = d.balance + "₽";
-                
-                if(d.is_admin) {
-                    document.getElementById('adm-btn').style.display = "block";
-                    document.getElementById('role').innerText = (user.toLowerCase() === "cold1ng") ? "DEV A" : "ADMIN";
-                    document.getElementById('role').style.color = "#ff4b4b";
-                    document.getElementById('uid').innerText = "#1";
-                } else {
-                    document.getElementById('uid').innerText = "#105";
-                }
-            } catch(e) { console.log("Offline"); }
+            const r = await fetch(`${API}/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user, password:""})});
+            const d = await r.json();
+            document.getElementById('nick').innerText = user;
+            document.getElementById('bal').innerText = d.balance + "₽";
+            document.getElementById('sub').innerText = d.subscription;
+            if(d.is_admin) {
+                document.getElementById('adm-btn').style.display = "block";
+                document.getElementById('role').innerText = "ADMINISTRATOR";
+                document.getElementById('role').style.color = "#ff4b4b";
+            }
         }
+
+        function openR() { document.getElementById('roulette-modal').style.display='flex'; }
+
+        async function startSpin() {
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true;
+            const r = await fetch(`${API}/api/spin`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user})});
+            const data = await r.json();
+            if(data.status === "error") return alert(data.message);
+
+            const tape = document.getElementById('tape');
+            tape.innerHTML = "";
+            for(let i=0; i<60; i++) {
+                const div = document.createElement('div');
+                div.className = "prize-box";
+                div.style.background = `hsl(${Math.random()*360}, 20%, 15%)`;
+                div.innerHTML = `<span style="font-size:10px; color:grey;">ITEM #${i}</span><br>???`;
+                tape.appendChild(div);
+            }
+            tape.style.transition = "none";
+            tape.style.transform = "translateX(0)";
+            
+            setTimeout(() => {
+                tape.style.transition = "5s cubic-bezier(0.1, 0, 0.1, 1)";
+                tape.style.transform = "translateX(-7500px)";
+            }, 50);
+
+            setTimeout(() => {
+                alert("РЕЗУЛЬТАТ: " + data.message);
+                location.reload();
+            }, 5500);
+        }
+
         function logout() { localStorage.clear(); location.href="login.html"; }
         sync();
     </script>
