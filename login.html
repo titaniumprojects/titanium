@@ -5,11 +5,12 @@
     <title>TITANIUM | Login</title>
     <style>
         body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 300px; }
-        h1 { color: #5f6eff; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #4a56d4; }
+        .login-card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #5f6eff; margin-bottom: 20px; letter-spacing: 2px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #5f6eff; }
+        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        button:hover { background: #4a56d4; transform: scale(1.02); }
         a { color: #555; text-decoration: none; font-size: 0.8rem; display: block; margin-top: 15px; }
     </style>
 </head>
@@ -17,24 +18,26 @@
 
 <div class="login-card">
     <h1>LOGIN</h1>
-    <input type="text" id="u" placeholder="Username">
-    <input type="password" id="p" placeholder="Password">
+    <input type="text" id="u" placeholder="Логин">
+    <input type="password" id="p" placeholder="Пароль">
     <button onclick="doLogin()">SIGN IN</button>
-    <a href="register.html">Нет аккаунта? Регистрация</a>
+    <a href="register.html">Создать аккаунт</a>
 </div>
 
 <script>
-    // 1. УБЕДИСЬ, ЧТО ЭТА ССЫЛКА СОВПАДАЕТ С ТВОИМ NGROK
+    // ПРОВЕРЬ, ЧТО ЭТОТ АДРЕС АКТУАЛЕН В NGROK ПРЯМО СЕЙЧАС!
     const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
 
     async function doLogin() {
         const u = document.getElementById('u').value.trim();
         const p = document.getElementById('p').value.trim();
 
-        if (!u || !p) return alert("Заполните все поля!");
+        if (!u || !p) return alert("Введите данные!");
+
+        // На всякий случай очищаем старый вход
+        localStorage.removeItem('username');
 
         try {
-            // 2. УБРАЛИ /api/, ТАК КАК В SERVER.PY ПУТЬ ПРОСТО /login
             const res = await fetch(`${API}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -43,16 +46,19 @@
 
             const data = await res.json();
 
+            // СТРОГАЯ ПРОВЕРКА СТАТУСА
             if (res.ok && data.status === "success") {
-                // 3. СОХРАНЯЕМ КАК 'username', ЧТОБЫ home.html ЕГО УВИДЕЛ
+                console.log("Вход разрешен");
                 localStorage.setItem('username', u);
                 window.location.href = "home.html";
             } else {
+                // Если статус не success - выводим ошибку и СТОИМ НА МЕСТЕ
+                console.log("Вход запрещен:", data.message);
                 alert(data.message || "Неверный логин или пароль");
             }
         } catch (e) {
-            console.error(e);
-            alert("Сервер не отвечает! Проверьте, запущен ли server.py и ngrok.");
+            console.error("Ошибка сети:", e);
+            alert("Сервер не отвечает! Проверь, запущен ли server.py и ngrok.");
         }
     }
 </script>
