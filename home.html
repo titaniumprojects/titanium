@@ -2,106 +2,57 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TITANIUM | Dashboard</title>
     <style>
-        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --text: #ffffff; --accent: #4caf50; }
+        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --text: #ffffff; --nav: #080810; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
+
+        /* ВЕРХНЯЯ ПАНЕЛЬ */
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--nav); display: flex; align-items: center; justify-content: space-between; padding: 0 50px; box-sizing: border-box; border-bottom: 1px solid #1a1a2e; z-index: 1000; }
+        .nav-logo { font-weight: bold; letter-spacing: 2px; color: var(--primary); }
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { color: #888; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: white; }
+
+        /* КОНТЕНТ */
+        .profile-card { background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid #1a1a2e; text-align: center; width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .user-avatar { width: 70px; height: 70px; background: #1a1a2e; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); font-size: 1.5rem; }
+        .balance-box { background: #141421; padding: 15px; border-radius: 12px; margin: 20px 0; border: 1px dashed #333; }
+        .balance-amount { font-size: 1.8rem; font-weight: bold; color: #4caf50; }
         
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        
-        .container { width: 90%; max-width: 400px; }
-
-        /* Карточка профиля */
-        .profile-card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #1a1a2e; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
-        
-        .profile-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, var(--primary), transparent); }
-
-        .user-avatar { width: 80px; height: 80px; background: #1a1a2e; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; border: 2px solid var(--primary); }
-
-        h1 { margin: 10px 0; font-size: 1.5rem; letter-spacing: 1px; }
-        .status { font-size: 0.8rem; color: var(--primary); text-transform: uppercase; font-weight: bold; margin-bottom: 20px; display: block; }
-
-        /* Баланс */
-        .balance-box { background: #141421; padding: 20px; border-radius: 16px; margin: 20px 0; border: 1px dashed #333; }
-        .balance-label { font-size: 0.8rem; color: #888; display: block; margin-bottom: 5px; }
-        .balance-amount { font-size: 2rem; font-weight: bold; color: var(--accent); }
-
-        /* Кнопки */
-        .menu { display: grid; gap: 10px; }
-        .btn { padding: 14px; border-radius: 12px; text-decoration: none; font-weight: bold; transition: 0.3s; text-align: center; font-size: 0.9rem; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #4a56d4; transform: translateY(-2px); }
-        .btn-outline { border: 1px solid #333; color: #ccc; }
-        .btn-outline:hover { border-color: var(--primary); color: white; }
-
-        .logout-btn { margin-top: 25px; color: #ff4d4d; font-size: 0.8rem; cursor: pointer; text-decoration: underline; background: none; border: none; width: 100%; }
+        .btn { display: block; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
+    <nav class="navbar">
+        <div class="nav-logo">TITANIUM</div>
+        <div class="nav-links">
+            <a href="home.html" class="active">ГЛАВНАЯ</a>
+            <a href="store.html">МАГАЗИН</a>
+            <a href="purchase.html">ПОПОЛНЕНИЕ</a>
+            <a href="settings.html">НАСТРОЙКИ</a>
+        </div>
+        <div id="nav-user" style="font-size: 0.8rem; color: #5f6eff;"></div>
+    </nav>
+
     <div class="profile-card">
         <div class="user-avatar">👤</div>
-        <h1 id="username-display">User</h1>
-        <span class="status">Premium Access</span>
-
+        <h1 id="username-display">---</h1>
         <div class="balance-box">
-            <span class="balance-label">ТЕКУЩИЙ БАЛАНС</span>
+            <span style="font-size: 0.7rem; color: #888; display: block;">БАЛАНС</span>
             <span class="balance-amount" id="balance-display">0₽</span>
         </div>
-
-        <div class="menu">
-            <a href="purchase.html" class="btn btn-primary">ПОПОЛНИТЬ СЧЕТ</a>
-            <a href="store.html" class="btn btn-outline">МАГАЗИН ТОВАРОВ</a>
-            <a href="settings.html" class="btn btn-outline">НАСТРОЙКИ</a>
-        </div>
-
-        <button class="logout-btn" onclick="logout()">Выйти из системы</button>
+        <a href="purchase.html" class="btn">ПОПОЛНИТЬ</a>
     </div>
-</div>
 
-<script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const user = localStorage.getItem('username');
-
-    // 1. ЗАЩИТА: Если ника нет — выкидываем
-    if (!user) {
-        window.location.href = "login.html";
-    } else {
+    <script>
+        const user = localStorage.getItem('username');
+        if (!user) window.location.href = "login.html";
         document.getElementById('username-display').innerText = user;
-        updateData();
-    }
-
-    // 2. ОБНОВЛЕНИЕ ДАННЫХ С СЕРВЕРА
-    async function updateData() {
-        try {
-            // Используем логин, чтобы получить актуальный баланс
-            // В идеале можно сделать @app.get("/user/{username}")
-            const res = await fetch(`${API}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: "" }) 
-            });
-            const data = await res.json();
-            
-            // Если сервер вернул баланс (даже если пароль пустой, мы просто берем инфу)
-            if (data.balance !== undefined) {
-                document.getElementById('balance-display').innerText = data.balance + "₽";
-            }
-        } catch (e) {
-            console.error("Ошибка обновления данных");
-        }
-    }
-
-    // 3. ВЫХОД
-    function logout() {
-        localStorage.removeItem('username');
-        window.location.href = "login.html";
-    }
-
-    // Обновляем данные каждые 10 секунд (авто-баланс)
-    setInterval(updateData, 10000);
-</script>
-
+        document.getElementById('nav-user').innerText = user.toUpperCase();
+        
+        // Тут можно добавить fetch для обновления баланса
+    </script>
 </body>
 </html>
