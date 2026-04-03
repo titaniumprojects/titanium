@@ -1,68 +1,144 @@
-<script>
-    // 1. Укажи СВОЙ актуальный адрес Ngrok
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const user = localStorage.getItem('username');
-
-    // Если в локальном хранилище пусто - на выход
-    if(!user) { window.location.href = 'login.html'; }
-
-    async function sync() {
-        try {
-            const r = await fetch(`${API}/login`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: user, password: ""}) // Авто-проверка сессии
-            });
-            const d = await r.json();
-
-            if(d.status === "error") {
-                // Если сервер не знает этого юзера (база очищена), удаляем мусор и выходим
-                localStorage.clear();
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Обновляем UI
-            document.getElementById('u-uid').innerText = "#" + d.uid;
-            document.getElementById('u-bal').innerText = d.balance + "₽";
-            document.getElementById('u-hwid').innerText = d.hwid;
-            
-            loadMarket(d.purchases);
-        } catch(e) {
-            console.error("Ошибка связи с сервером");
-        }
-    }
-
-    async function loadMarket(purchases = []) {
-        const r = await fetch(`${API}/api/market`);
-        const items = await r.json();
-        const container = document.getElementById('market-list');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>TITANIUM | Dashboard</title>
+    <style>
+        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --border: #1a1a2e; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
         
-        if (items.length === 0) {
-            container.innerHTML = "<p style='color:gray; padding:20px;'>Маркетплейс пуст. Создайте первый топик!</p>";
-            return;
+        /* Боковая панель */
+        .sidebar { background: var(--card); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .stat { background: #080810; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; }
+        .stat b { color: var(--primary); float: right; }
+
+        /* Контент */
+        .content { padding: 20px; overflow-y: auto; }
+        .header { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
+        .header a { color: #888; text-decoration: none; border: 1px solid var(--border); padding: 5px 15px; border-radius: 5px; font-size: 12px; }
+
+        /* Сетка маркета */
+        #market-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .item-card img { width: 100%; height: 150px; object-fit: cover; }
+        .item-info { padding: 15px; }
+        
+        .btn { background: var(--primary); border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-dl { background: #4caf50; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 style="color:var(--primary)">TITANIUM</h2>
+        <div class="stat">Логин: <b id="u-name">...</b></div>
+        <div class="stat">Баланс: <b id="u-bal">0₽</b></div>
+        <div class="stat">ID: <b id="u-uid">#0</b></div>
+        <button class="btn" style="margin-top:auto; background:#ff4b4b" onclick="logout()">ВЫЙТИ</button>
+    </div>
+
+    <div class="content">
+        <div class="header">
+            <a href="#" onclick="sync()">ОБНОВИТЬ</a>
+            <a href="settings.html">НАСТРОЙКИ</a>
+        </div>
+
+        <h3 id="status-msg" style="color:gray">Загрузка маркета...</h3>
+        <div id="market-list"></div>
+    </div>
+
+    <script>
+        // !!! ОБЯЗАТЕЛЬНО ПРОВЕРЬ ЭТУ ССЫЛКУ !!!
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        const username = localStorage.getItem('username');
+
+        // Если не залогинен — отправляем на вход
+        if (!username) { window.location.href = "login.html"; }
+
+        async function sync() {
+            try {
+                // Проверяем пользователя на сервере
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: "" })
+                });
+                const data = await res.json();
+
+                if (data.status === "error") {
+                    localStorage.clear();
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                // Заполняем данные (с защитой от пустых полей)
+                document.getElementById('u-name').innerText = username;
+                document.getElementById('u-bal').innerText = (data.balance || 0) + "₽";
+                document.getElementById('u-uid').innerText = "#" + (data.uid || "???");
+
+                loadMarket(data.purchases || []);
+            } catch (e) {
+                document.getElementById('status-msg').innerText = "ОШИБКА СВЯЗИ С СЕРВЕРОМ (Проверь Ngrok)";
+                console.error(e);
+            }
         }
 
-        container.innerHTML = items.map(i => `
-            <div class="topic">
-                <img src="${i.img}">
-                <div class="topic-content">
-                    <div class="topic-title">${i.title}</div>
-                    <div style="font-size:13px; color:#888;">${i.desc}</div>
-                    <div class="topic-footer">
-                        <span style="color:#4caf50; font-weight:bold;">${i.price}₽</span>
-                        ${purchases.includes(i.id) ? 
-                            `<button class="btn btn-dl" onclick="window.open('${i.file_url}')">СКАЧАТЬ</button>` :
-                            `<button class="btn" onclick="buy('${i.id}')">КУПИТЬ</button>`
-                        }
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
+        async function loadMarket(purchases) {
+            try {
+                const res = await fetch(`${API}/api/market`);
+                const items = await res.json();
+                const container = document.getElementById('market-list');
+                const status = document.getElementById('status-msg');
 
-    // Запуск функций
-    sync();
-    loadChat(); // функция из предыдущего кода
-    setInterval(loadChat, 5000);
-</script>
+                if (items.length === 0) {
+                    status.innerText = "В маркете пока ничего нет.";
+                    return;
+                }
+
+                status.innerText = "Доступные товары:";
+                container.innerHTML = items.map(item => `
+                    <div class="item-card">
+                        <img src="${item.img || 'https://via.placeholder.com/300x150'}">
+                        <div class="item-info">
+                            <h4>${item.title}</h4>
+                            <p style="color:#888; font-size:12px">${item.desc || ''}</p>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px">
+                                <b style="color:#4caf50">${item.price}₽</b>
+                                ${purchases.includes(item.id) 
+                                    ? `<button class="btn btn-dl" onclick="window.open('${item.file_url}')">СКАЧАТЬ</button>`
+                                    : `<button class="btn" onclick="buy('${item.id}')">КУПИТЬ</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.log("Ошибка загрузки маркета");
+            }
+        }
+
+        async function buy(id) {
+            const res = await fetch(`${API}/api/market/buy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, item_id: id })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                alert("Успешная покупка!");
+                sync();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        // Запуск при загрузке
+        sync();
+    </script>
+</body>
+</html>
