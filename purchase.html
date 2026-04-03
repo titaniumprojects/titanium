@@ -1,59 +1,56 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Titanium | Магазин</title>
-    <style>
-        body { background: #05050a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
-        .pricing { display: flex; gap: 20px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
-        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 220px; }
-        .price { font-size: 2rem; color: #5f6eff; margin: 15px 0; }
-        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        .back { margin-top: 30px; color: #555; text-decoration: none; }
-    </style>
-</head>
-<body>
-    <h1>ТАРИФЫ</h1>
-    <div class="pricing">
-        <div class="card"><h3>7 Дней</h3><div class="price">149₽</div><button onclick="buy(149)">КУПИТЬ</button></div>
-        <div class="card"><h3>14 Дней</h3><div class="price">299₽</div><button onclick="buy(299)">КУПИТЬ</button></div>
-        <div class="card"><h3>30 Дней</h3><div class="price">599₽</div><button onclick="buy(599)">КУПИТЬ</button></div>
-    </div>
-    <a href="home.html" class="back">← В кабинет</a>
+<div class="card">
+    <h2>Подписка на 30 дней</h2>
+    <p>Цена: 500₽</p>
+    <button class="buy-btn" onclick="buyProduct(500)">Купить</button>
+</div>
+
+<div id="payment-status" style="display:none; margin-top: 20px; padding: 15px; border: 1px solid #5f6eff; border-radius: 10px;">
+    <p id="pay-text">Счет создан!</p>
+    <a id="pay-link" href="#" target="_blank" style="color: #4caf50; font-weight: bold;">ОПЛАТИТЬ В CRYPTO BOT</a>
+    <br><br>
+    <button onclick="checkPayment()" style="background: #5f6eff; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+        Я оплатил (Проверить)
+    </button>
+</div>
 
 <script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const user = localStorage.getItem('titanium_user');
+    const API_URL = "https://heptarchal-stanton-hemispheric.ngrok-free.dev"; // ВСТАВЬ СВОЙ NGROK СЮДА!
+    let currentInvoiceId = null;
 
-    async function buy(price) {
-        if (!user) return window.location.href = "login.html";
-        const params = new URLSearchParams();
-        params.append('user', user);
-        params.append('price', price);
+    async function buyProduct(amount) {
+        const username = localStorage.getItem('username');
+        if (!username) return alert("Сначала войдите в аккаунт!");
 
-        try {
-            const res = await fetch(`${API}/api/buy_sub`, { method: 'POST', body: params });
-            const data = await res.json();
-            if (data.status === "success") {
-                alert("Успешно!");
-                window.location.href = "home.html";
-            } else {
-                if (confirm("Недостаточно средств. Пополнить через Crypto Bot?")) payCrypto(price);
-            }
-        } catch (e) { alert("Ошибка сервера"); }
+        const response = await fetch(`${API_URL}/create_invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, amount })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            currentInvoiceId = result.invoice_id;
+            document.getElementById('payment-status').style.display = 'block';
+            document.getElementById('pay-link').href = result.pay_url;
+            document.getElementById('pay-text').innerText = `Счет на ${amount}₽ успешно создан.`;
+        } else {
+            alert("Ошибка при создании счета: " + result.message);
+        }
     }
 
-    async function payCrypto(amount) {
-        const params = new URLSearchParams();
-        params.append('user', user);
-        params.append('amount', amount);
-        try {
-            const res = await fetch(`${API}/api/pay/crypto`, { method: 'POST', body: params });
-            const data = await res.json();
-            if (data.status === "success") window.location.href = data.url;
-            else alert("Ошибка платежа");
-        } catch (e) { alert("Ошибка API"); }
+    async function checkPayment() {
+        const username = localStorage.getItem('username');
+        if (!currentInvoiceId) return;
+
+        const response = await fetch(`${API_URL}/check_payment/${currentInvoiceId}/${username}`);
+        const result = await response.json();
+
+        if (result.status === "paid") {
+            alert("Оплата прошла успешно! Ваш баланс пополнен.");
+            window.location.href = "home.html";
+        } else {
+            alert("Оплата еще не получена. Попробуйте через минуту.");
+        }
     }
 </script>
-</body>
-</html>
