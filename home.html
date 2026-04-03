@@ -2,54 +2,60 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Titanium | Кабинет</title>
+    <title>TITANIUM | Главная</title>
     <style>
-        body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-        .card { background: #0c0c14; padding: 40px; border-radius: 24px; border: 1px solid #1a1a2e; width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .user-name { color: #5f6eff; font-size: 1.8rem; margin-bottom: 10px; font-weight: bold; }
-        .admin-nick { color: #ff4b4b !important; text-shadow: 0 0 15px rgba(255, 75, 75, 0.5); text-transform: uppercase; }
-        .balance { font-size: 1.2rem; color: #888; margin-bottom: 30px; }
-        .download-btn { display: none; background: linear-gradient(135deg, #00c853, #b2ff59); color: #000; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        .download-btn:hover { transform: scale(1.05); }
-        .shop-btn { display: block; color: #5f6eff; text-decoration: none; margin-top: 20px; font-size: 0.9rem; }
+        body { background: #05050a; color: white; font-family: sans-serif; padding: 50px; text-align: center; }
+        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; display: inline-block; min-width: 300px; }
+        .user-info { margin-bottom: 20px; font-size: 1.2rem; }
+        .btn { display: block; padding: 12px; background: #5f6eff; color: white; text-decoration: none; border-radius: 8px; margin-top: 10px; }
+        .logout { color: #ff4d4d; text-decoration: none; font-size: 0.8rem; margin-top: 20px; display: block; }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="user-name" id="display-name">...</div>
-    <div class="balance">Баланс: <span id="display-balance">0</span>₽</div>
-    <div id="loader-section" style="display: none;">
-        <p style="color: #4caf50; font-size: 0.9rem;">Подписка активна ✅</p>
-        <a href="files/TitaniumLoader.exe" class="download-btn" id="dl-btn" download>СКАЧАТЬ ЛОАДЕР</a>
+    <div class="card">
+        <h1>TITANIUM PROJECT</h1>
+        <div class="user-info">
+            Добро пожаловать, <span id="display-name" style="color: #5f6eff;">...</span>!
+        </div>
+        <p>Баланс: <span id="balance">0</span>₽</p>
+        <a href="purchase.html" class="btn">Пополнить баланс</a>
+        <a href="#" onclick="logout()" class="logout">Выйти из аккаунта</a>
     </div>
-    <a href="purchase.html" class="shop-btn">В магазин подписок →</a>
-    <button onclick="logout()" style="margin-top:30px; background:none; border:none; color:#444; cursor:pointer;">Выйти</button>
-</div>
 
-<script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const user = localStorage.getItem('titanium_user');
-    if (!user) window.location.href = "login.html";
+    <script>
+        // 1. ЗАЩИТА: Если не залогинен — уходим на страницу логина
+        const user = localStorage.getItem('username');
+        if (!user) {
+            window.location.href = "login.html";
+        }
 
-    async function loadProfile() {
-        try {
-            const res = await fetch(`${API}/api/user/${user}`);
-            const data = await res.json();
-            const nameElement = document.getElementById('display-name');
-            nameElement.innerText = data.username;
-            document.getElementById('display-balance').innerText = data.balance;
+        document.getElementById('display-name').innerText = user;
 
-            if (data.username.toLowerCase() === "cold1ng" || data.username.toLowerCase() === "rebound") {
-                nameElement.classList.add("admin-nick");
-            }
-            if (data.has_sub) {
-                document.getElementById('loader-section').style.display = "block";
-                document.getElementById('dl-btn').style.display = "block";
-            }
-        } catch (e) { console.error("Ошибка API"); }
-    }
-    function logout() { localStorage.clear(); window.location.href = "index.html"; }
-    loadProfile();
-</script>
+        // 2. ЗАГРУЗКА ДАННЫХ С СЕРВЕРА
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        
+        async function loadData() {
+            try {
+                // Используем логин для получения инфо (можно сделать отдельный эндпоинт, 
+                // но пока берем из того что сервер прислал бы при входе)
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: "" }) // Сервер вернет данные если юзер в базе
+                });
+                const data = await res.json();
+                if (data.balance !== undefined) {
+                    document.getElementById('balance').innerText = data.balance;
+                }
+            } catch (e) { console.log("Ошибка обновления баланса"); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        loadData();
+    </script>
 </body>
 </html>
