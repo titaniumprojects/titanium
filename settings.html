@@ -12,30 +12,23 @@
 </head>
 <body>
     <div class="box">
-        <h3 style="margin:0; color:#5f6eff;">SETTINGS</h3>
-        <p style="font-size:12px; color:#555;">Смена пароля аккаунта</p>
-        <input type="password" id="new-p" placeholder="Введите новый пароль">
+        <h3 style="color:#5f6eff;">SETTINGS</h3>
+        <input type="password" id="new-p" placeholder="Новый пароль">
         <button onclick="save()">СОХРАНИТЬ</button>
         <br><br>
-        <a href="home.html" style="color:#444; font-size:12px; text-decoration:none;">← Назад на главную</a>
+        <a href="home.html" style="color:grey; font-size:12px; text-decoration:none;">← Назад</a>
     </div>
-
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         const user = localStorage.getItem('username');
-
         async function save() {
             const new_p = document.getElementById('new-p').value;
-            if(!new_p) return alert("Введите пароль!");
-            
             const r = await fetch(`${API}/api/update_password`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: user, new_password: new_p})
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username:user, new_password:new_p})
             });
             const d = await r.json();
-            if(d.status === "success") alert("Пароль успешно обновлен!");
-            else alert("Ошибка при сохранении.");
+            if(d.status === "success") alert("Готово!");
         }
     </script>
 </body>
