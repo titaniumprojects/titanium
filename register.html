@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Titanium | Регистрация</title>
+    <style>
+        body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; width: 320px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #161625; border: 1px solid #252545; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        h2 { color: #5f6eff; margin-bottom: 20px; }
+        a { color: #444; text-decoration: none; font-size: 0.8rem; margin-top: 15px; display: block; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>REGISTRATION</h2>
+    <input type="text" id="reg-u" placeholder="Логин">
+    <input type="password" id="reg-p" placeholder="Пароль">
+    <button onclick="doRegister()">CREATE ACCOUNT</button>
+    <a href="index.html">← На главную</a>
+</div>
+
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+
+    async function doRegister() {
+        const u = document.getElementById('reg-u').value.trim();
+        const p = document.getElementById('reg-p').value.trim();
+        if(!u || !p) return alert("Заполните поля!");
+
+        try {
+            const res = await fetch(`${API}/api/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+            if (res.ok) {
+                alert("Успешно! Теперь войдите.");
+                window.location.href = "login.html";
+            } else {
+                const err = await res.json();
+                alert(err.detail || "Ошибка");
+            }
+        } catch (e) { alert("Сервер недоступен"); }
+    }
+</script>
+</body>
+</html>
