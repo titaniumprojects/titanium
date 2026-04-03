@@ -2,33 +2,40 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Настройки</title>
+    <title>TITANIUM | Settings</title>
     <style>
-        body { background: #05050a; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 100px; }
-        .box { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 350px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #5f6eff; border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .logout { margin-top: 20px; color: #ff4b4b; cursor: pointer; font-size: 0.8rem; }
+        body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding-top: 100px; }
+        .box { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 15px 0; background: #05050a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h3>НАСТРОЙКИ</h3>
-        <label>Новый пароль</label>
-        <input type="password" id="new-p" placeholder="Введите пароль">
-        <button class="btn" onclick="save()">СОХРАНИТЬ ПАРОЛЬ</button>
-        <center><div class="logout" onclick="localStorage.clear(); location.href='login.html'">Выйти из аккаунта</div></center>
+        <h3 style="margin:0; color:#5f6eff;">SETTINGS</h3>
+        <p style="font-size:12px; color:#555;">Смена пароля аккаунта</p>
+        <input type="password" id="new-p" placeholder="Введите новый пароль">
+        <button onclick="save()">СОХРАНИТЬ</button>
+        <br><br>
+        <a href="home.html" style="color:#444; font-size:12px; text-decoration:none;">← Назад на главную</a>
     </div>
+
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        const user = localStorage.getItem('username');
+
         async function save() {
-            const p = document.getElementById('new-p').value;
-            if(p.length < 4) return alert("Короткий!");
-            const r = await fetch(`${API}/admin/update_password`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({username: localStorage.getItem('username'), password: p})
+            const new_p = document.getElementById('new-p').value;
+            if(!new_p) return alert("Введите пароль!");
+            
+            const r = await fetch(`${API}/api/update_password`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: user, new_password: new_p})
             });
-            if(r.ok) alert("Успешно!");
+            const d = await r.json();
+            if(d.status === "success") alert("Пароль успешно обновлен!");
+            else alert("Ошибка при сохранении.");
         }
     </script>
 </body>
