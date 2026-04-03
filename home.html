@@ -2,397 +2,98 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TITANIUM | Dashboard</title>
     <style>
-        :root {
-            --bg: #05050a;
-            --card: #0c0c14;
-            --primary: #5f6eff;
-            --text-main: #ffffff;
-            --text-muted: #888888;
-            --nav-bg: #080810;
-            --border: #1a1a2e;
-            --accent-green: #4caf50;
-            --accent-red: #ff4b4b;
+        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --border: #1a1a2e; }
+        body { 
+            background: var(--bg); color: white; font-family: sans-serif; margin: 0; 
+            display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 60px 1fr; height: 100vh; 
         }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            display: grid;
-            grid-template-rows: 60px 1fr; /* Высота навбара и остальное */
-            grid-template-columns: 280px 1fr; /* Ширина боковой панели и центра */
-            height: 100vh;
-            overflow: hidden;
+        
+        .header { 
+            grid-column: 1 / -1; background: #080810; border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; justify-content: flex-end; padding: 0 25px; gap: 15px;
         }
+        .header a { color: #888; text-decoration: none; padding: 7px 15px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; }
+        .header a:hover { color: white; border-color: var(--primary); }
 
-        /* --- ВЕРХНЯЯ ПАНЕЛЬ (NAVBAR) --- */
-        .navbar {
-            grid-row: 1;
-            grid-column: 1 / -1; /* На всю ширину */
-            background-color: var(--nav-bg);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
+        .sidebar { 
+            background: var(--card); border-right: 1px solid var(--border); padding: 20px; 
+            display: flex; flex-direction: column; gap: 15px; 
         }
-
-        .nav-logo {
-            font-weight: bold;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            color: var(--primary);
-            text-decoration: none;
+        .info-box { border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.2); }
+        .label { color: #444; font-size: 10px; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        .val { font-size: 14px; margin-bottom: 12px; color: #ccc; }
+        
+        .content { display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .loader-card { 
+            border: 1px solid var(--border); padding: 50px; border-radius: 20px; text-align: center; background: var(--card);
+            width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
         }
+        .dl-btn { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .nav-btn {
-            background: none;
-            border: 1px solid transparent;
-            color: var(--text-muted);
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            color: var(--text-main);
-            background-color: rgba(255,255,255,0.05);
-            border-color: var(--border);
-        }
-
-        .nav-btn.logout-top {
-            color: var(--accent-red);
-            border-color: rgba(255, 75, 75, 0.3);
-        }
-        .nav-btn.logout-top:hover {
-            background-color: rgba(255, 75, 75, 0.1);
-        }
-
-        /* --- БОКОВАЯ ПАНЕЛЬ ПРОФИЛЯ (LEFT SIDEBAR) --- */
-        .sidebar {
-            grid-row: 2;
-            grid-column: 1;
-            background-color: var(--card);
-            padding: 20px;
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto; /* Если контента много, будет скролл */
-        }
-
-        .profile-block {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            background-color: rgba(0,0,0,0.2);
-        }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .avatar-circle {
-            width: 50px;
-            height: 50px;
-            background-color: #1a1a2e;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            border: 2px solid var(--primary);
-        }
-
-        #username-display {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--text-main);
-        }
-
-        .balance-display {
-            font-size: 1.5rem;
-            color: var(--accent-green);
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        .info-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
-        }
-
-        .info-value {
-            font-size: 0.9rem;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            word-break: break-all; /* Для длинных HWID/Ключей */
-        }
-
-        .info-value.role-dev { color: #ffca28; font-weight: bold; }
-        .info-value.role-admin { color: var(--accent-red); font-weight: bold; }
-        .info-value.role-user { color: #4fc3f7; }
-
-        .btn-action {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            font-size: 0.9rem;
-            transition: 0.2s;
-            box-sizing: border-box;
-            margin-top: 10px;
-        }
-
-        .btn-action:hover {
-            background-color: #4a56d4;
-            transform: translateY(-1px);
-        }
-
-        .btn-admin-panel {
-            background-color: var(--accent-red);
-            display: none; /* Скрыто по умолчанию */
-        }
-        .btn-admin-panel:hover { background-color: #d32f2f; }
-
-        .logout-sidebar {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--accent-red);
-            margin-top: auto; /* Прижать к низу */
-        }
-        .logout-sidebar:hover {
-            background-color: rgba(255, 75, 75, 0.1);
-        }
-
-        /* --- ЦЕНТРАЛЬНАЯ ЗОНА (MAIN CONTENT) --- */
-        .main-content {
-            grid-row: 2;
-            grid-column: 2;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .news-block {
-            background-color: var(--card);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            padding: 25px;
-        }
-
-        .news-block h2 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.3rem;
-        }
-
-        .download-zone {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            border: 2px dashed var(--border);
-            border-radius: 16px;
-            background-color: rgba(12, 12, 20, 0.5);
-            transition: 0.3s;
-        }
-
-        .download-zone:hover {
-            border-color: var(--primary);
-            background-color: rgba(95, 110, 255, 0.05);
-        }
-
-        .download-card {
-            background-color: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .loader-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-
-        #download-btn {
-            background-color: var(--accent-green);
-            padding: 12px 30px;
-            font-size: 1rem;
-        }
-        #download-btn:hover { background-color: #45a049; }
-
-        /* Полоса прокрутки (Scrollbar) */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
+        #adm-btn { display: none; background: #ff4b4b; color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <div class="header">
+        <a href="settings.html">Настройки</a>
+        <a href="home.html" style="color:white;">Главная</a>
+        <a href="store.html">Приобрести</a>
+        <a href="#" onclick="logout()" style="border-color:#ff4b4b; color:#ff4b4b;">Выход</a>
+    </div>
 
-    <nav class="navbar">
-        <a href="home.html" class="nav-logo">TITANIUM</a>
-        <div class="nav-links">
-            <a href="home.html" class="nav-btn active">Главная</a>
-            <a href="store.html" class="nav-btn">Приобрести</a>
-            <a href="settings.html" class="nav-btn">Настройки</a>
-            <button class="nav-btn logout-top" onclick="logout()">Выход</button>
+    <div class="sidebar">
+        <div class="info-box">
+            <div class="label">Пользователь</div>
+            <div class="val" id="nick" style="color:white; font-weight:bold;">Загрузка...</div>
+            <div class="label">Баланс</div>
+            <div class="val" id="bal" style="color:#4caf50; font-weight:bold;">0₽</div>
+            <a href="admin.html" id="adm-btn">АДМИН ПАНЕЛЬ</a>
         </div>
-    </nav>
-
-    <aside class="sidebar">
-        <div class="profile-block">
-            <div class="profile-header">
-                <div class="avatar-circle">👤</div>
-                <div>
-                    <h3 id="username-display">Загрузка...</h3>
-                    <div id="u-role-badge" class="info-value role-user">User</div>
-                </div>
-            </div>
-            
-            <div class="info-label">Баланс</div>
-            <div class="balance-display" id="balance-display">0₽</div>
-            
-            <a href="purchase.html" class="btn-action">Пополнить</a>
-            <a href="admin.html" id="admin-panel-link" class="btn-action btn-admin-panel">Админ Панель</a>
+        <div class="info-box">
+            <div class="label">UID</div><div class="val" id="uid">#---</div>
+            <div class="label">Роль</div><div class="val" id="role" style="color:var(--primary);">User</div>
+            <div class="label">HWID</div><div class="val" style="font-size:10px; opacity:0.5;">A1-B2-C3-D4-E5</div>
         </div>
+    </div>
 
-        <div class="profile-block">
-            <div class="info-label">UID</div>
-            <div class="info-value" id="uid-display">#---</div>
-
-            <div class="info-label">HWID</div>
-            <div class="info-value" id="hwid-display">Не привязан</div>
-            
-            <div class="info-label">Ключ подписки</div>
-            <div class="info-value" id="sub-key-display">Отсутствует</div>
+    <div class="content">
+        <div class="loader-card">
+            <div style="font-size: 40px; margin-bottom: 20px;">💠</div>
+            <h3 style="margin-bottom: 20px;">TITANIUM LOADER</h3>
+            <button class="dl-btn" onclick="alert('Скачивание...')">СКАЧАТЬ</button>
         </div>
-
-        <button class="btn-action logout-sidebar" onclick="logout()">Выйти из аккаунта</button>
-    </aside>
-
-    <main class="main-content">
-        <div class="news-block">
-            <h2>Новости и Обновления</h2>
-            <p style="color:var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-                Добро пожаловать в обновленную панель TITANIUM. <br><br>
-                • Читы для Valorant обновлены под последний патч игры. <br>
-                • Исправлена ошибка привязки HWID на некоторых системах. <br>
-                • В магазин добавлены новые тарифы.
-            </p>
-        </div>
-
-        <div class="download-zone">
-            <div class="download-card">
-                <div class="loader-icon">💾</div>
-                <h3 style="margin: 0 0 15px 0;">TITANIUM Loader</h3>
-                <p style="color:var(--text-muted); font-size: 0.8rem; margin-bottom: 20px;">
-                    Версия: 1.0.3 | Статус: <span style="color:var(--accent-green); font-weight:bold;">Undetected</span>
-                </p>
-                <a href="#" id="download-btn" class="btn-action">Скачать лоадер</a>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         const user = localStorage.getItem('username');
+        if(!user) location.href = "login.html";
 
-        // ЗАЩИТА И ИНИЦИАЛИЗАЦИЯ
-        if (!user) {
-            window.location.href = "login.html";
-        } else {
-            document.getElementById('username-display').innerText = user;
-            updateData();
-        }
-
-        // ПОЛУЧЕНИЕ ДАННЫХ С СЕРВЕРА
-        async function updateData() {
+        async function sync() {
             try {
-                // Сервер принимает логин и пустой пароль, если юзер уже в системе
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, password: "" }) 
+                const r = await fetch(`${API}/login`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: user, password: ""})
                 });
-                const data = await res.json();
+                const d = await r.json();
                 
-                if (data.status === "success") {
-                    // 1. Обновляем баланс
-                    document.getElementById('balance-display').innerText = data.balance + "₽";
-                    
-                    // 2. Логика Админки
-                    if (data.is_admin) {
-                        document.getElementById('admin-panel-link').style.display = "block";
-                        
-                        // Меняем роль визуально
-                        const roleBadge = document.getElementById('u-role-badge');
-                        roleBadge.innerText = "Admin";
-                        roleBadge.className = "info-value role-admin";
-                        
-                        // Для cold1ng ставим роль DEV (как в примере)
-                        if (user.toLowerCase() === "cold1ng") {
-                            roleBadge.innerText = "Dev A";
-                            roleBadge.className = "info-value role-dev";
-                        }
-                    }
-
-                    // 3. UID, HWID, Key (Пока статика, т.к. сервер это не хранит)
-                    // Но блоки готовы для приема данных
-                    // document.getElementById('hwid-display').innerText = data.hwid || "Не привязан";
-
+                document.getElementById('nick').innerText = user;
+                document.getElementById('bal').innerText = d.balance + "₽";
+                
+                if(d.is_admin) {
+                    document.getElementById('adm-btn').style.display = "block";
+                    document.getElementById('role').innerText = (user.toLowerCase() === "cold1ng") ? "DEV A" : "ADMIN";
+                    document.getElementById('role').style.color = "#ff4b4b";
+                    document.getElementById('uid').innerText = "#1";
                 } else {
-                    // Если сервер отверг сессию, выходим
-                    logout();
+                    document.getElementById('uid').innerText = "#105";
                 }
-
-            } catch (e) {
-                console.error("Ошибка обновления данных");
-                // Можно добавить красную надпись "ОФФЛАЙН"
-            }
+            } catch(e) { console.log("Offline"); }
         }
-
-        // ВЫХОД
-        function logout() {
-            localStorage.removeItem('username');
-            window.location.href = "login.html";
-        }
-
-        // Авто-обновление раз в 10 секунд
-        setInterval(updateData, 10000);
+        function logout() { localStorage.clear(); location.href="login.html"; }
+        sync();
     </script>
 </body>
 </html>
