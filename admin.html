@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>TITANIUM | Admin</title>
+    <style>
+        body { background: #05050a; color: #fff; font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #0c0c14; }
+        th, td { border: 1px solid #1a1a2e; padding: 10px; text-align: left; }
+        input { background: #1a1a2e; border: 1px solid #333; color: #fff; padding: 5px; width: 60px; }
+        button { background: #4caf50; color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>АДМИН ПАНЕЛЬ</h2>
+    <div id="list"></div>
+    <script>
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        async function load() {
+            const r = await fetch(`${API}/admin/users`);
+            const users = await r.json();
+            let h = `<table><tr><th>User</th><th>Balance</th><th>Set</th></tr>`;
+            users.forEach(u => {
+                h += `<tr><td>${u.username}</td><td><input id="i-${u.username}" value="${u.balance}"></td>
+                <td><button onclick="set('${u.username}')">SAVE</button></td></tr>`;
+            });
+            document.getElementById('list').innerHTML = h + `</table>`;
+        }
+        async function set(name) {
+            const b = document.getElementById(`i-${name}`).value;
+            await fetch(`${API}/admin/update_balance`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({username:name, balance:parseInt(b)})
+            });
+            alert("OK");
+        }
+        load();
+    </script>
+</body>
+</html>
