@@ -5,18 +5,19 @@
     <title>TITANIUM | Registration</title>
     <style>
         body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 320px; }
+        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         input { width: 100%; padding: 12px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
         button { width: 100%; padding: 12px; background: #4caf50; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+        .back { color:#555; font-size:12px; display:block; margin-top:15px; text-decoration:none; }
     </style>
 </head>
 <body>
     <div class="card">
         <h1 style="color:#4caf50">TITANIUM</h1>
-        <input type="text" id="u" placeholder="Логин">
-        <input type="password" id="p" placeholder="Пароль">
-        <button onclick="doRegister()">СОЗДАТЬ АККАУНТ</button>
-        <a href="login.html" style="color:#555; font-size:12px; display:block; margin-top:15px; text-decoration:none;">Уже есть аккаунт?</a>
+        <input type="text" id="u" placeholder="Придумайте логин">
+        <input type="password" id="p" placeholder="Придумайте пароль">
+        <button onclick="doRegister()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+        <a href="login.html" class="back">Уже есть аккаунт? Войти</a>
     </div>
 
     <script>
@@ -26,14 +27,18 @@
             const p = document.getElementById('p').value.trim();
             if(!u || !p) return alert("Заполни поля!");
 
-            const res = await fetch(`${API}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: u, password: p })
-            });
-            const data = await res.json();
-            if (data.status === "success") { alert("Готово!"); window.location.href="login.html"; }
-            else alert(data.message);
+            try {
+                const res = await fetch(`${API}/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+                if (data.status === "success") { 
+                    alert("Успешно! Теперь войдите."); 
+                    window.location.href="login.html"; 
+                }
+                else alert(data.message);
+            } catch(e) { alert("Сервер недоступен!"); }
         }
     </script>
 </body>

@@ -5,25 +5,25 @@
     <title>TITANIUM | Top Up</title>
     <style>
         body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 300px; text-align: center; }
-        input { width: 100%; padding: 10px; margin-bottom: 15px; background: #05050a; border: 1px solid #333; color: white; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background: #4caf50; border: none; color: white; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; width: 300px; text-align: center; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; background: #05050a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; text-align: center; font-size: 18px;}
+        button { width: 100%; padding: 15px; background: #4caf50; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;}
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>ПОПОЛНЕНИЕ</h3>
+        <h2 style="color:#4caf50; margin-top:0;">ПОПОЛНЕНИЕ</h2>
         <input type="number" id="amt" placeholder="Сумма в ₽">
-        <button onclick="pay()">СОЗДАТЬ СЧЕТ</button>
-        <div id="out" style="margin-top:15px"></div>
-        <a href="home.html" style="display:block; margin-top:20px; color:#555; text-decoration:none; font-size:12px;">← Отмена</a>
+        <button onclick="pay()">ПЕРЕЙТИ К ОПЛАТЕ</button>
+        <div id="out" style="margin-top:20px"></div>
+        <a href="home.html" style="display:block; margin-top:20px; color:#555; text-decoration:none; font-size:14px;">← Назад</a>
     </div>
 
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         async function pay() {
             const amount = document.getElementById('amt').value;
-            if(amount < 10) return alert("Мин. 10₽");
+            if(amount < 10) return alert("Минимальная сумма 10₽");
             
             const r = await fetch(`${API}/create_invoice`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -31,8 +31,7 @@
             });
             const d = await r.json();
             if(d.status === "success") {
-                document.getElementById('out').innerHTML = `<a href="${d.pay_url}" target="_blank" style="color:#4caf50">ОПЛАТИТЬ</a>`;
-                window.open(d.pay_url, '_blank');
+                window.location.href = d.pay_url;
             }
         }
     </script>
