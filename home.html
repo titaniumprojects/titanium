@@ -1,227 +1,402 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITANIUM | Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TITANIUM | Dashboard</title>
+    <style>
+        :root {
+            --bg: #05050a;
+            --card: #0c0c14;
+            --primary: #5f6eff;
+            --primary-glow: rgba(95, 110, 255, 0.3);
+            --border: #1a1a2e;
+            --text-main: #ffffff;
+            --text-dim: #888;
+            --accent: #4caf50;
+            --radius: 18px;
+        }
 
-<style>
-body {
-    background:#05050a;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-}
+        * { box-sizing: border-box; transition: all 0.3s ease; }
 
-.main {
-    padding:20px;
-    max-width:900px;
-    margin:auto;
-}
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-.roulette-viewport {
-    width:100%;
-    height:80px;
-    overflow:hidden;
-    border:1px solid #222;
-    margin-bottom:10px;
-    position:relative;
-}
+        /* Sidebar */
+        .sidebar {
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
 
-.track { display:flex; }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
 
-.item {
-    min-width:120px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-right:1px solid #222;
-}
+        .profile-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-.spin-btn {
-    padding:10px;
-    cursor:pointer;
-}
+        .avatar {
+            width: 65px; height: 65px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: bold;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
 
-button {
-    margin-top:5px;
-}
-</style>
+        .status-container { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-top: 10px; }
+        .status-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            display: flex; justify-content: space-between; font-size: 12px;
+        }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            display: flex; align-items: center; gap: 12px; font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(95, 110, 255, 0.1); color: var(--primary); }
+
+        /* Main Content */
+        .main {
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background: radial-gradient(circle at top right, #0a0a1a, transparent);
+        }
+
+        /* --- РУЛЕТКА --- */
+        .roulette-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roulette-viewport {
+            width: 100%;
+            height: 80px;
+            background: #05050a;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .pointer {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 2px; height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            z-index: 5;
+            transform: translateX(-50%);
+        }
+
+        .track {
+            display: flex;
+            position: absolute;
+            left: 0; top: 0;
+            height: 100%;
+            will-change: transform;
+        }
+
+        .item {
+            min-width: 120px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-right: 1px solid #1a1a2e;
+            font-size: 14px;
+            background: linear-gradient(180deg, #0c0c14, #08080f);
+        }
+
+        .spin-btn {
+            background: var(--primary);
+            border: none; color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: block; margin: 0 auto;
+        }
+        .spin-btn:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; }
+
+        /* --- МАГАЗИН --- */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .product-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+
+        .buy-btn {
+            background: var(--primary); border: none; color: white;
+            padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .buy-btn:disabled { background: #1a1a2e; color: #555; }
+
+        .section-header {
+            font-size: 18px; font-weight: bold;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logout { color: #444; font-size: 12px; text-align: center; margin-top: 20px; cursor: pointer; text-decoration: none; }
+    </style>
 </head>
-
 <body>
 
-<div class="main">
-
-<h2 id="user-display">...</h2>
-<div>Баланс: <span id="stat-bal">0</span> ₽</div>
-
-<h3>🎰 Рулетка</h3>
-
-<div class="roulette-viewport">
-    <div class="track" id="track"></div>
-</div>
-
-<button class="spin-btn" id="spinBtn" onclick="spin()">Крутить</button>
-
-<h3>🛒 Магазин</h3>
-<div id="market-list"></div>
-
-<br>
-<button onclick="logout()">Выйти</button>
-
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev"; // 🔥 ВСТАВЬ СЮДА
-const user = localStorage.getItem('username');
-
-if (!user) {
-    location.href = "login.html";
-    return;
-}
-
-const elUser = document.getElementById('user-display');
-const elBal = document.getElementById('stat-bal');
-
-if (!elUser || !elBal) {
-    alert("Ошибка загрузки страницы");
-    return;
-}
-
-elUser.innerText = user;
-
-// --- SYNC ---
-async function sync() {
-    try {
-        const res = await fetch(API + "/login", {
-            method:"POST",
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({username:user, password:""})
-        });
-
-        const data = await res.json();
-
-        if (data.status !== "success") {
-            alert("Сессия сломалась");
-            logout();
-            return;
-        }
-
-        elBal.innerText = data.balance || 0;
-        loadMarket(data.purchases || []);
-
-    } catch(e) {
-        console.log(e);
-        alert("Нет соединения с сервером");
-    }
-}
-
-// --- MARKET ---
-async function loadMarket(purchases){
-    try {
-        const r = await fetch(API + "/api/market");
-        const items = await r.json();
-
-        const list = document.getElementById('market-list');
-
-        list.innerHTML = items.map(i => `
-            <div>
-                ${i.title} - ${i.price} ₽
-                <button ${purchases.includes(i.id) ? 'disabled' : `onclick="buy('${i.id}')"`}>
-                    ${purchases.includes(i.id) ? 'Куплено' : 'Купить'}
-                </button>
+    <aside class="sidebar">
+        <div class="logo">TITANIUM</div>
+        
+        <div class="profile-card">
+            <div class="avatar" id="avatar-init">?</div>
+            <div class="username" id="user-display">Loading...</div>
+            
+            <div class="status-container">
+                <div class="status-item">
+                    <span style="color:var(--text-dim)">Subscription</span>
+                    <span style="color:var(--accent)" id="sub-status">Active</span>
+                </div>
+                <div class="status-item">
+                    <span style="color:var(--text-dim)">HWID</span>
+                    <span id="hwid-status">Linked</span>
+                </div>
+                <div class="status-item">
+                    <span style="color:var(--text-dim)">Balance</span>
+                    <span id="stat-bal">0 ₽</span>
+                </div>
             </div>
-        `).join('');
-    } catch(e) {
-        console.log(e);
-    }
-}
+        </div>
 
-window.buy = async function(id){
-    try {
-        const r = await fetch(API + "/api/market/buy", {
-            method:"POST",
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({username:user,item_id:id})
-        });
+        <nav class="nav-menu">
+            <a href="home.html" class="nav-item active">🏠 Главная</a>
+            <a href="forum.html" class="nav-item">💬 Сообщество</a>
+            <a href="purchase.html" class="nav-item">💳 Пополнение</a>
+            <a href="settings.html" class="nav-item">⚙️ Настройки</a>
+            <a href="admin.html" id="admin-link" class="nav-item" style="display:none; color:#ff4b4b;">🛠 Админ-панель</a>
+        </nav>
 
-        const d = await r.json();
-        alert(d.message || "OK");
-        sync();
-    } catch(e) {
-        alert("Ошибка покупки");
-    }
-}
+        <a onclick="logout()" class="logout">Выйти из системы</a>
+    </aside>
 
-// --- РУЛЕТКА ---
-const rewards = ["10 ₽","50 ₽","100 ₽","5 ₽","20 ₽"];
-const track = document.getElementById('track');
+    <main class="main">
+        <section class="roulette-section">
+            <div class="section-header">🎰 Ежедневный бонус</div>
+            <div class="roulette-viewport">
+                <div class="pointer"></div>
+                <div class="track" id="track"></div>
+            </div>
+            <button class="spin-btn" id="spinBtn" onclick="spin()">КРУТИТЬ БЕСПЛАТНО</button>
+            <div id="cooldown" style="text-align:center; font-size:12px; color:var(--text-dim); margin-top:10px;"></div>
+        </section>
 
-function initTrack(){
-    if (!track) return;
+        <section>
+            <div class="section-header">🛒 Магазин софта</div>
+            <div class="market-grid" id="market-list"></div>
+        </section>
+    </main>
 
-    track.innerHTML='';
-    for(let i=0;i<60;i++){
-        const div=document.createElement('div');
-        div.className='item';
-        div.innerText=rewards[Math.random()*rewards.length|0];
-        track.appendChild(div);
-    }
-}
+    <script>
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        const user = localStorage.getItem('username');
 
-window.spin = async function(){
-    const btn = document.getElementById('spinBtn');
-    if (!btn) return;
+        if (!user) window.location.href = "login.html";
 
-    btn.disabled = true;
+        document.getElementById('user-display').innerText = user;
+        document.getElementById('avatar-init').innerText = user[0].toUpperCase();
 
-    initTrack();
+        // --- СИНХРОНИЗАЦИЯ ПРОФИЛЯ ---
+        async function sync() {
+            try {
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: user, password: ""})
+                });
+                const data = await res.json();
+                
+                document.getElementById('stat-bal').innerText = (data.balance || 0) + " ₽";
+                const hwidEl = document.getElementById('hwid-status');
+                hwidEl.innerText = data.hwid ? "Linked" : "Not Found";
+                hwidEl.style.color = data.hwid ? "var(--primary)" : "#ff4b4b";
 
-    track.style.transition='transform 6s cubic-bezier(0.1,0,0.1,1)';
-    track.style.transform='translateX(-3000px)';
-
-    let result;
-
-    try{
-        const res = await fetch(API + "/api/roulette/spin",{
-            method:"POST",
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({username:user})
-        });
-
-        result = await res.json();
-
-        if(result.status !== "success"){
-            alert(result.message || "Ошибка");
-            btn.disabled = false;
-            return;
+                if (data.is_admin) document.getElementById('admin-link').style.display = "flex";
+                loadMarket(data.purchases || []);
+            } catch(e) {}
         }
 
-    }catch(e){
-        alert("Сервер не отвечает");
-        btn.disabled = false;
-        return;
-    }
+        async function loadMarket(purchases) {
+            try {
+                const r = await fetch(`${API}/api/market`);
+                const items = await r.json();
+                const list = document.getElementById('market-list');
+                list.innerHTML = items.map(i => `
+                    <div class="product-card">
+                        <div style="font-weight:bold; color:var(--primary);">${i.title}</div>
+                        <div style="color:var(--text-dim); font-size:12px; flex:1;">${i.desc}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:bold; color:var(--accent);">${i.price} ₽</span>
+                            <button class="buy-btn" ${purchases.includes(i.id) ? 'disabled' : `onclick="buy('${i.id}')"`}>
+                                ${purchases.includes(i.id) ? 'КУПЛЕНО' : 'КУПИТЬ'}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {}
+        }
 
-    setTimeout(()=>{
-        alert("Выигрыш: " + result.win);
+        async function buy(id) {
+            if (!confirm("Купить этот товар?")) return;
+            const r = await fetch(`${API}/api/market/buy`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: user, item_id: id})
+            });
+            const d = await r.json();
+            alert(d.message || "Успешно!");
+            sync();
+        }
+
+        // --- ЛОГИКА РУЛЕТКИ ---
+        const rewards = ["10₽", "50₽", "10₽", "100₽", "5₽", "5₽", "10₽", "20₽"];
+        const track = document.getElementById('track');
+        
+        function initTrack() {
+            track.innerHTML = '';
+            for(let i=0; i<60; i++) {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerText = rewards[Math.floor(Math.random() * rewards.length)];
+                track.appendChild(div);
+            }
+        }
+
+        function checkCooldown() {
+            const last = localStorage.getItem(`lastSpin_${user}`);
+            const btn = document.getElementById('spinBtn');
+            const cd = document.getElementById('cooldown');
+            
+            if(last) {
+                const diff = Date.now() - last;
+                if(diff < 86400000) {
+                    btn.disabled = true;
+                    const hours = Math.ceil((86400000 - diff) / 3600000);
+                    cd.innerText = `Доступно через ${hours} ч.`;
+                    return false;
+                }
+            }
+            btn.disabled = false;
+            cd.innerText = "Бонус готов!";
+            return true;
+        }
+
+        async function spin() {
+            const btn = document.getElementById('spinBtn');
+            
+            // 1. Спрашиваем у сервера результат
+            try {
+                const response = await fetch(`${API}/api/roulette/spin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user })
+                });
+                const result = await response.json();
+
+                if (result.status === "error") {
+                    alert(result.message);
+                    return;
+                }
+
+                // 2. Подготовка анимации
+                btn.disabled = true;
+                const winName = result.win; 
+                
+                const itemWidth = 121; 
+                const winIndex = 45; 
+                const offset = (winIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
+                
+                track.style.transition = 'none';
+                track.style.transform = 'translateX(0)';
+                
+                initTrack();
+                track.children[winIndex].innerText = winName; // Ставим реальный выигрыш в нужный слот
+                track.children[winIndex].style.color = "var(--primary)";
+
+                // 3. Запуск вращения
+                setTimeout(() => {
+                    track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
+                    track.style.transform = `translateX(-${offset + (Math.random()*40 - 20)}px)`;
+                }, 50);
+
+                // 4. Завершение
+                setTimeout(() => {
+                    alert(`Поздравляем! Ваш выигрыш: ${winName}`);
+                    localStorage.setItem(`lastSpin_${user}`, Date.now());
+                    checkCooldown();
+                    sync(); // Обновляем баланс в UI
+                }, 6500);
+
+            } catch (e) {
+                alert("Ошибка сервера при прокрутке");
+            }
+        }
+
+        function logout() { localStorage.removeItem('username'); window.location.href = "login.html"; }
+
+        // Инициализация при загрузке
+        initTrack();
+        checkCooldown();
         sync();
-    },6000);
-}
-
-window.logout = function(){
-    localStorage.removeItem('username');
-    location.href="login.html";
-}
-
-initTrack();
-sync();
-
-});
-</script>
-
+    </script>
 </body>
 </html>
