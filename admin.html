@@ -2,69 +2,38 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Админ-панель</title>
+    <title>Titanium | Админ-панель</title>
     <style>
-        body {
-            background: #0a0f0a;
-            color: #ccffcc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .card {
-            background: #0e150e;
-            border: 1px solid #2a4d2a;
-            border-radius: 32px;
-            padding: 40px;
-            width: 340px;
-            text-align: center;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: #0a0f0a;
-            border: 1px solid #2a4d2a;
-            border-radius: 40px;
-            color: #ccffcc;
-        }
-        button {
-            background: #2ecc2e;
-            border: none;
-            padding: 12px;
-            border-radius: 40px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-        }
-        a {
-            color: #8bc48b;
-            display: block;
-            margin-top: 20px;
-        }
+        body{background:#0a0f0a;color:#cfc;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}
+        .card{background:#0e150e;border:1px solid #2a4d2a;border-radius:32px;padding:40px;width:340px;text-align:center;}
+        input{width:100%;padding:12px;margin:10px 0;background:#0a0f0a;border:1px solid #2a4d2a;border-radius:40px;color:#cfc;}
+        button{background:#2ecc2e;border:none;padding:12px;border-radius:40px;font-weight:bold;width:100%;cursor:pointer;}
+        a{color:#8bc48b;display:block;margin-top:20px;}
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>🛠 АДМИН</h2>
-        <input type="text" id="targetUser" placeholder="Логин игрока">
-        <input type="number" id="giveAmount" placeholder="Сумма">
-        <button id="giveBtn">ВЫДАТЬ БАЛАНС</button>
-        <a href="index.html">← На главную</a>
-    </div>
-
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-
-        document.getElementById('giveBtn').onclick = async () => {
-            const target = document.getElementById('targetUser').value.trim();
-            const amount = parseInt(document.getElementById('giveAmount').value);
-
-            if (!target || isNaN(amount)) return alert("Заполните поля");
-
-            alert(`✅ Выдано ${amount} ₽ игроку ${target} (заглушка — доработай бэкенд)`);
-        };
-    </script>
+<div class="card">
+    <h2>🛠 АДМИН</h2>
+    <input type="text" id="targetUser" placeholder="Логин игрока">
+    <input type="number" id="giveAmount" placeholder="Сумма">
+    <button id="giveBtn">ВЫДАТЬ БАЛАНС</button>
+    <a href="index.html">← На главную</a>
+</div>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    document.getElementById('giveBtn').onclick = async () => {
+        const target = document.getElementById('targetUser').value.trim();
+        const amount = parseInt(document.getElementById('giveAmount').value);
+        if(!target || isNaN(amount)) return alert("Заполните поля");
+        try {
+            const res = await fetch(`${API}/api/admin/give`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({target, balance:amount})
+            });
+            const data = await res.json();
+            alert(data.message || "Баланс выдан");
+        } catch(e) { alert("Ошибка сервера"); }
+    };
+</script>
 </body>
 </html>

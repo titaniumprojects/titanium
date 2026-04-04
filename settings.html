@@ -2,63 +2,31 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Настройки</title>
+    <title>Titanium | Настройки</title>
     <style>
-        body {
-            background: #0a0f0a;
-            color: #ccffcc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .card {
-            background: #0e150e;
-            border: 1px solid #2a4d2a;
-            border-radius: 32px;
-            padding: 40px;
-            width: 340px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 14px;
-            background: #0a0f0a;
-            border: 1px solid #2a4d2a;
-            border-radius: 40px;
-            color: #ccffcc;
-            margin: 15px 0;
-        }
-        button {
-            background: #2ecc2e;
-            border: none;
-            padding: 12px;
-            border-radius: 40px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-        }
-        a {
-            color: #8bc48b;
-            display: block;
-            margin-top: 20px;
-        }
+        body{background:#0a0f0a;color:#cfc;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}
+        .card{background:#0e150e;border:1px solid #2a4d2a;border-radius:32px;padding:40px;width:340px;text-align:center;}
+        input{width:100%;padding:14px;background:#0a0f0a;border:1px solid #2a4d2a;border-radius:40px;color:#cfc;margin:15px 0;}
+        button{background:#2ecc2e;border:none;padding:12px;border-radius:40px;font-weight:bold;width:100%;cursor:pointer;}
+        a{color:#8bc48b;display:block;margin-top:20px;}
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>⚙️ НАСТРОЙКИ</h2>
-        <input type="password" id="newPass" placeholder="Новый пароль">
-        <button id="changePassBtn">СМЕНИТЬ ПАРОЛЬ</button>
-        <a href="index.html">← На главную</a>
-    </div>
-
-    <script>
-        document.getElementById('changePassBtn').onclick = () => {
-            const newPass = document.getElementById('newPass').value;
-            if (newPass.length < 4) return alert("Пароль минимум 4 символа");
-            alert("🔧 Функция смены пароля будет в следующей версии бэкенда");
-        };
-    </script>
+<div class="card">
+    <h2>⚙️ НАСТРОЙКИ</h2>
+    <input type="password" id="newPass" placeholder="Новый пароль">
+    <button id="changePassBtn">СМЕНИТЬ ПАРОЛЬ</button>
+    <a href="index.html">← На главную</a>
+</div>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    const username = localStorage.getItem('username');
+    document.getElementById('changePassBtn').onclick = async () => {
+        const newPass = document.getElementById('newPass').value;
+        if(newPass.length<4) return alert("Пароль минимум 4 символа");
+        // В server.py добавь эндпоинт /change_password если нужно
+        alert("Функция будет добавлена в следующем обновлении");
+    };
+</script>
 </body>
 </html>

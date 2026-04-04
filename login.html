@@ -2,115 +2,46 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Вход</title>
+    <title>Titanium | Вход</title>
     <style>
-        body {
-            background: #0a0f0a;
-            color: #ccffcc;
-            font-family: 'Segoe UI', system-ui, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: #0e150e;
-            border: 1px solid #2a4d2a;
-            border-radius: 32px;
-            padding: 40px;
-            width: 340px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(46, 204, 46, 0.1);
-        }
-        h1 {
-            color: #2ecc2e;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
-        }
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            background: #0a0f0a;
-            border: 1px solid #2a4d2a;
-            color: #ccffcc;
-            border-radius: 24px;
-            outline: none;
-            box-sizing: border-box;
-        }
-        input:focus {
-            border-color: #2ecc2e;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #2ecc2e;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 16px;
-        }
-        button:disabled {
-            background: #2a4d2a;
-            color: #8bc48b;
-            cursor: not-allowed;
-        }
-        a {
-            color: #8bc48b;
-            text-decoration: none;
-            display: block;
-            margin-top: 20px;
-            font-size: 14px;
-        }
+        body{background:#0a0f0a;color:#cfc;font-family:monospace;display:flex;justify-content:center;align-items:center;height:100vh;}
+        .card{background:#0e150e;border:1px solid #2a4d2a;border-radius:32px;padding:40px;width:340px;text-align:center;}
+        h1{color:#2ecc2e;}
+        input{width:100%;padding:14px;margin:10px 0;background:#0a0f0a;border:1px solid #2a4d2a;color:#cfc;border-radius:40px;}
+        button{width:100%;padding:14px;background:#2ecc2e;border:none;border-radius:40px;font-weight:bold;cursor:pointer;}
+        a{color:#8bc48b;display:block;margin-top:20px;}
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>TITANIUM</h1>
-        <input type="text" id="username" placeholder="Логин">
-        <input type="password" id="password" placeholder="Пароль">
-        <button id="loginBtn">ВОЙТИ</button>
-        <a href="register.html">Нет аккаунта? Создать</a>
-    </div>
-
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-
-        document.getElementById('loginBtn').onclick = async () => {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const btn = document.getElementById('loginBtn');
-
-            if (!username) return alert("Введите логин");
-
-            btn.disabled = true;
-            btn.innerText = "ВХОД...";
-
-            try {
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
-
-                if (data.status === "success") {
-                    localStorage.setItem('username', data.username);
-                    window.location.href = "index.html";
-                } else {
-                    alert("Неверный логин или пароль");
-                }
-            } catch (e) {
-                alert("Ошибка: сервер недоступен");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "ВОЙТИ";
-            }
-        };
-    </script>
+<div class="card">
+    <h1>TITANIUM</h1>
+    <input type="text" id="username" placeholder="Логин">
+    <input type="password" id="password" placeholder="Пароль">
+    <button id="loginBtn">ВОЙТИ</button>
+    <a href="register.html">Создать аккаунт</a>
+</div>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    document.getElementById('loginBtn').onclick = async () => {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const btn = document.getElementById('loginBtn');
+        if(!username) return alert("Введите логин");
+        btn.disabled = true;
+        btn.innerText = "ВХОД...";
+        try{
+            const res = await fetch(`${API}/login`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if(data.status === "success"){
+                localStorage.setItem('username', data.username);
+                window.location.href = "index.html";
+            } else alert(data.message || "Ошибка");
+        }catch(e){ alert("Сервер недоступен"); }
+        finally{ btn.disabled=false; btn.innerText="ВОЙТИ"; }
+    };
+</script>
 </body>
 </html>

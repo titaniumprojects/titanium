@@ -2,131 +2,64 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Форум</title>
+    <title>Titanium | Форум</title>
     <style>
-        body {
-            background: #0a0f0a;
-            color: #ccffcc;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        .chat {
-            max-width: 900px;
-            width: 100%;
-            margin: 30px auto;
-            background: #0e150e;
-            border: 1px solid #2a4d2a;
-            border-radius: 28px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            overflow: hidden;
-        }
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .msg {
-            background: #0c120c;
-            padding: 10px 15px;
-            border-radius: 20px;
-            max-width: 70%;
-        }
-        .msg-mine {
-            align-self: flex-end;
-            background: #1a2e1a;
-        }
-        .user {
-            color: #2ecc2e;
-            font-size: 12px;
-            margin-bottom: 4px;
-        }
-        .input-area {
-            display: flex;
-            padding: 20px;
-            gap: 12px;
-            border-top: 1px solid #2a4d2a;
-        }
-        input {
-            flex: 1;
-            background: #0a0f0a;
-            border: 1px solid #2a4d2a;
-            padding: 12px;
-            border-radius: 40px;
-            color: #ccffcc;
-        }
-        button {
-            background: #2ecc2e;
-            border: none;
-            padding: 0 24px;
-            border-radius: 40px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        a {
-            color: #8bc48b;
-            text-align: center;
-            display: block;
-            padding: 15px;
-        }
+        body{background:#0a0f0a;color:#cfc;margin:0;display:flex;flex-direction:column;height:100vh;font-family:monospace;}
+        .chat{max-width:900px;width:100%;margin:30px auto;background:#0e150e;border:1px solid #2a4d2a;border-radius:28px;display:flex;flex-direction:column;flex:1;overflow:hidden;}
+        #messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;}
+        .msg{background:#0c120c;padding:10px 15px;border-radius:20px;max-width:70%;}
+        .msg-mine{align-self:flex-end;background:#1a2e1a;}
+        .user{color:#2ecc2e;font-size:12px;margin-bottom:4px;}
+        .input-area{display:flex;padding:20px;gap:12px;border-top:1px solid #2a4d2a;}
+        input{flex:1;background:#0a0f0a;border:1px solid #2a4d2a;padding:12px;border-radius:40px;color:#cfc;}
+        button{background:#2ecc2e;border:none;padding:0 24px;border-radius:40px;font-weight:bold;cursor:pointer;}
+        a{color:#8bc48b;text-align:center;display:block;padding:15px;}
     </style>
 </head>
 <body>
-    <div class="chat">
-        <div id="messages"></div>
-        <div class="input-area">
-            <input type="text" id="msgInput" placeholder="Сообщение...">
-            <button onclick="sendMsg()">➤</button>
-        </div>
+<div class="chat">
+    <div id="messages"></div>
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Сообщение...">
+        <button onclick="sendMsg()">➤</button>
     </div>
-    <a href="index.html">← На главную</a>
-
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const username = localStorage.getItem('username');
-        if (!username) window.location.href = "login.html";
-
-        let lastCount = 0;
-
-        async function loadMessages() {
-            try {
-                const res = await fetch(`${API}/api/chat`);
-                const msgs = await res.json();
-                if (msgs.length !== lastCount) {
-                    const container = document.getElementById('messages');
-                    container.innerHTML = msgs.map(m => `
-                        <div class="msg ${m.user === username ? 'msg-mine' : ''}">
-                            <div class="user">${m.user}</div>
-                            <div>${m.text}</div>
-                        </div>
-                    `).join('');
-                    container.scrollTop = container.scrollHeight;
-                    lastCount = msgs.length;
-                }
-            } catch(e) {}
-        }
-
-        async function sendMsg() {
-            const input = document.getElementById('msgInput');
-            const text = input.value.trim();
-            if (!text) return;
-            input.value = '';
-            await fetch(`${API}/api/chat/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: username, text })
-            });
-            loadMessages();
-        }
-
-        setInterval(loadMessages, 1500);
+</div>
+<a href="index.html">← На главную</a>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    const username = localStorage.getItem('username');
+    if (!username) window.location.href = "login.html";
+    let lastCount = 0;
+    async function loadMessages() {
+        try {
+            const res = await fetch(`${API}/api/chat`);
+            const msgs = await res.json();
+            if(msgs.length !== lastCount) {
+                const container = document.getElementById('messages');
+                container.innerHTML = msgs.map(m => `
+                    <div class="msg ${m.user === username ? 'msg-mine' : ''}">
+                        <div class="user">${m.user}</div>
+                        <div>${m.text}</div>
+                    </div>
+                `).join('');
+                container.scrollTop = container.scrollHeight;
+                lastCount = msgs.length;
+            }
+        } catch(e) {}
+    }
+    async function sendMsg() {
+        const input = document.getElementById('msgInput');
+        const text = input.value.trim();
+        if(!text) return;
+        input.value = '';
+        await fetch(`${API}/api/chat/send`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({user:username, text})
+        });
         loadMessages();
-    </script>
+    }
+    setInterval(loadMessages, 1500);
+    loadMessages();
+</script>
 </body>
 </html>
