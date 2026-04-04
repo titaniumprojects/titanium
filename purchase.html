@@ -2,52 +2,38 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Пополнение</title>
+    <title>TITANIUM | Top Up</title>
     <style>
-        body { background: #05050a; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
-        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; max-width: 400px; margin: 20px auto; }
-        .price { color: #4caf50; font-size: 20px; margin: 15px 0; }
-        button { background: #5f6eff; border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        #status { margin-top: 20px; color: #888; font-size: 14px; }
+        body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 300px; text-align: center; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; background: #05050a; border: 1px solid #333; color: white; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #4caf50; border: none; color: white; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>TOP UP BALANCE</h1>
     <div class="card">
-        <h3>ПОПОЛНИТЬ ЧЕРЕЗ CRYPTO</h3>
-        <p style="font-size: 12px; color: gray;">Минимальная сумма: 100₽</p>
-        <input type="number" id="amount" placeholder="Сумма в рублях" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:none;">
-        <button onclick="createPay()">СОЗДАТЬ СЧЕТ</button>
-        <div id="status"></div>
+        <h3>ПОПОЛНЕНИЕ</h3>
+        <input type="number" id="amt" placeholder="Сумма в ₽">
+        <button onclick="pay()">СОЗДАТЬ СЧЕТ</button>
+        <div id="out" style="margin-top:15px"></div>
+        <a href="home.html" style="display:block; margin-top:20px; color:#555; text-decoration:none; font-size:12px;">← Отмена</a>
     </div>
-    <a href="home.html" style="color: #555; text-decoration: none;">← Вернуться</a>
 
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const user = localStorage.getItem('username');
-
-        async function createPay() {
-            const amount = document.getElementById('amount').value;
-            if(amount < 100) return alert("Минимум 100₽!");
-
-            const status = document.getElementById('status');
-            status.innerText = "Генерация счета...";
-
-            try {
-                const res = await fetch(`${API}/create_invoice`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, amount: amount })
-                });
-                const data = await res.json();
-
-                if (data.status === "success") {
-                    status.innerHTML = `<a href="${data.pay_url}" target="_blank" style="color:#4caf50; font-weight:bold; text-decoration:none;">НАЖМИТЕ ЗДЕСЬ ДЛЯ ОПЛАТЫ</a>`;
-                    window.open(data.pay_url, '_blank');
-                } else {
-                    status.innerText = "Ошибка: " + data.message;
-                }
-            } catch (e) { status.innerText = "Сервер оплаты недоступен."; }
+        async function pay() {
+            const amount = document.getElementById('amt').value;
+            if(amount < 10) return alert("Мин. 10₽");
+            
+            const r = await fetch(`${API}/create_invoice`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: localStorage.getItem('username'), amount })
+            });
+            const d = await r.json();
+            if(d.status === "success") {
+                document.getElementById('out').innerHTML = `<a href="${d.pay_url}" target="_blank" style="color:#4caf50">ОПЛАТИТЬ</a>`;
+                window.open(d.pay_url, '_blank');
+            }
         }
     </script>
 </body>
