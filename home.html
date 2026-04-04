@@ -1,75 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TITANIUM | Dashboard</title>
+
+<style>
+body {
+    background:#05050a;
+    color:white;
+    font-family:sans-serif;
+    margin:0;
+}
+
+.main {
+    padding:20px;
+    max-width:900px;
+    margin:auto;
+}
+
+.roulette-viewport {
+    width:100%;
+    height:80px;
+    overflow:hidden;
+    border:1px solid #222;
+    margin-bottom:10px;
+    position:relative;
+}
+
+.track { display:flex; }
+
+.item {
+    min-width:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-right:1px solid #222;
+}
+
+.spin-btn {
+    padding:10px;
+    cursor:pointer;
+}
+
+button {
+    margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="main">
+
+<h2 id="user-display">...</h2>
+<div>Баланс: <span id="stat-bal">0</span> ₽</div>
+
+<h3>🎰 Рулетка</h3>
+
+<div class="roulette-viewport">
+    <div class="track" id="track"></div>
+</div>
+
+<button class="spin-btn" id="spinBtn" onclick="spin()">Крутить</button>
+
+<h3>🛒 Магазин</h3>
+<div id="market-list"></div>
+
+<br>
+<button onclick="logout()">Выйти</button>
+
+</div>
+
 <script>
-const API = "http://127.0.0.1:8000";
+document.addEventListener("DOMContentLoaded", () => {
+
+const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev"; // 🔥 ВСТАВЬ СЮДА
 const user = localStorage.getItem('username');
 
-if (!user) window.location.href = "login.html";
+if (!user) {
+    location.href = "login.html";
+    return;
+}
 
-document.getElementById('user-display').innerText = user;
-document.getElementById('avatar-init').innerText = user[0].toUpperCase();
+const elUser = document.getElementById('user-display');
+const elBal = document.getElementById('stat-bal');
 
+if (!elUser || !elBal) {
+    alert("Ошибка загрузки страницы");
+    return;
+}
+
+elUser.innerText = user;
+
+// --- SYNC ---
 async function sync() {
     try {
-        const res = await fetch(`${API}/login`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({username: user, password: ""})
+        const res = await fetch(API + "/login", {
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({username:user, password:""})
         });
 
         const data = await res.json();
 
-        document.getElementById('stat-bal').innerText = (data.balance || 0) + " ₽";
+        if (data.status !== "success") {
+            alert("Сессия сломалась");
+            logout();
+            return;
+        }
 
+        elBal.innerText = data.balance || 0;
         loadMarket(data.purchases || []);
-    } catch(e) {}
+
+    } catch(e) {
+        console.log(e);
+        alert("Нет соединения с сервером");
+    }
 }
 
-async function loadMarket(purchases) {
-    const r = await fetch(`${API}/api/market`);
-    const items = await r.json();
+// --- MARKET ---
+async function loadMarket(purchases){
+    try {
+        const r = await fetch(API + "/api/market");
+        const items = await r.json();
 
-    const list = document.getElementById('market-list');
+        const list = document.getElementById('market-list');
 
-    list.innerHTML = items.map(i => `
-        <div class="product-card">
-            <div>${i.title}</div>
-            <div>${i.desc}</div>
-            <div>${i.price} ₽</div>
-            <button ${purchases.includes(i.id) ? 'disabled' : `onclick="buy('${i.id}')"`}>
-                ${purchases.includes(i.id) ? 'КУПЛЕНО' : 'КУПИТЬ'}
-            </button>
-        </div>
-    `).join('');
+        list.innerHTML = items.map(i => `
+            <div>
+                ${i.title} - ${i.price} ₽
+                <button ${purchases.includes(i.id) ? 'disabled' : `onclick="buy('${i.id}')"`}>
+                    ${purchases.includes(i.id) ? 'Куплено' : 'Купить'}
+                </button>
+            </div>
+        `).join('');
+    } catch(e) {
+        console.log(e);
+    }
 }
 
-async function buy(id) {
-    const r = await fetch(`${API}/api/market/buy`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username: user, item_id: id})
-    });
+window.buy = async function(id){
+    try {
+        const r = await fetch(API + "/api/market/buy", {
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({username:user,item_id:id})
+        });
 
-    const d = await r.json();
-    alert(d.message || "OK");
-    sync();
+        const d = await r.json();
+        alert(d.message || "OK");
+        sync();
+    } catch(e) {
+        alert("Ошибка покупки");
+    }
 }
 
 // --- РУЛЕТКА ---
-
 const rewards = ["10 ₽","50 ₽","100 ₽","5 ₽","20 ₽"];
 const track = document.getElementById('track');
 
-function initTrack() {
-    track.innerHTML = '';
+function initTrack(){
+    if (!track) return;
+
+    track.innerHTML='';
     for(let i=0;i<60;i++){
-        const div = document.createElement('div');
+        const div=document.createElement('div');
         div.className='item';
-        div.innerText = rewards[Math.floor(Math.random()*rewards.length)];
+        div.innerText=rewards[Math.random()*rewards.length|0];
         track.appendChild(div);
     }
 }
 
-async function spin(){
+window.spin = async function(){
     const btn = document.getElementById('spinBtn');
+    if (!btn) return;
+
     btn.disabled = true;
 
     initTrack();
@@ -79,9 +185,9 @@ async function spin(){
 
     let result;
 
-    try {
-        const res = await fetch(`${API}/api/roulette/spin`, {
-            method:'POST',
+    try{
+        const res = await fetch(API + "/api/roulette/spin",{
+            method:"POST",
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({username:user})
         });
@@ -89,28 +195,33 @@ async function spin(){
         result = await res.json();
 
         if(result.status !== "success"){
-            alert(result.message);
+            alert(result.message || "Ошибка");
             btn.disabled = false;
             return;
         }
 
-    } catch(e){
-        alert("Ошибка сервера");
+    }catch(e){
+        alert("Сервер не отвечает");
         btn.disabled = false;
         return;
     }
 
     setTimeout(()=>{
-        alert("Вы выиграли: " + result.win);
+        alert("Выигрыш: " + result.win);
         sync();
     },6000);
 }
 
-function logout(){
+window.logout = function(){
     localStorage.removeItem('username');
     location.href="login.html";
 }
 
 initTrack();
 sync();
+
+});
 </script>
+
+</body>
+</html>
