@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Titanium | Магазин</title>
+    <style>
+        body{background:#0a0f0a;color:#cfc;padding:30px;font-family:monospace;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;max-width:1200px;margin:30px auto;}
+        .card{background:#0e150e;border:1px solid #2a4d2a;border-radius:28px;padding:24px;text-align:center;}
+        .price{font-size:28px;color:#2ecc2e;margin:15px 0;}
+        button{background:#2ecc2e;border:none;padding:12px 24px;border-radius:40px;font-weight:bold;cursor:pointer;}
+        button:disabled{background:#2a4d2a;cursor:not-allowed;}
+        a{color:#8bc48b;display:block;text-align:center;margin-top:20px;}
+    </style>
+</head>
+<body>
+<h2 style="text-align:center;">🛒 МАГАЗИН</h2>
+<div id="items" class="grid"></div>
+<div><a href="index.html">← На главную</a></div>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    const username = localStorage.getItem('username');
+    if (!username) window.location.href = "login.html";
+
+    async function load() {
+        try {
+            const [marketRes, userRes] = await Promise.all([
+                fetch(`${API}/api/market`),
+                fetch(`${API}/login`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({username, password:""})
+                })
+            ]);
+            const items = await marketRes.json();
+            const user = await userRes.json();
+            const purchases = user.purchases || [];
+            document.getElementById('items').innerHTML = items.map(item => `
+                <div class="card">
+                    <h3>${item.title}</h3>
+                    <p>${item.desc}</p>
+                    <div class="price">${item.price} ₽</div>
+                    ${purchases.includes(item.id) ? '<button disabled>✅ КУПЛЕНО</button>' : `<button onclick="buy('${item.id}')">КУПИТЬ</button>`}
+                </div>
+            `).join('');
+        } catch(e) { document.getElementById('items').innerHTML = "<p>Ошибка загрузки</p>"; }
+    }
+
+    async function buy(id) {
+        try {
+            const res = await fetch(`${API}/api/market/buy`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username, item_id:id})
+            });
+            const data = await res.json();
+            if(data.status === "success") { alert("Покупка успешна!"); load(); }
+            else alert(data.message || "Ошибка");
+        } catch(e) { alert("Сервер недоступен"); }
+    }
+    load();
+</script>
+</body>
+</html>
