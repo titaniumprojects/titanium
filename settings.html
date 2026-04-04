@@ -5,30 +5,31 @@
     <title>TITANIUM | Settings</title>
     <style>
         body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding-top: 100px; }
-        .box { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 15px 0; background: #05050a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+        .box { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; width: 320px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 15px 0; background: #05050a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
         button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h3 style="color:#5f6eff;">SETTINGS</h3>
+        <h3 style="color:#5f6eff; margin-bottom: 20px;">SETTINGS</h3>
         <input type="password" id="new-p" placeholder="Новый пароль">
-        <button onclick="save()">СОХРАНИТЬ</button>
+        <button onclick="save()">ОБНОВИТЬ ПАРОЛЬ</button>
         <br><br>
-        <a href="home.html" style="color:grey; font-size:12px; text-decoration:none;">← Назад</a>
+        <a href="home.html" style="color:grey; font-size:12px; text-decoration:none;">← Назад на главную</a>
     </div>
+
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         const user = localStorage.getItem('username');
+
         async function save() {
-            const new_p = document.getElementById('new-p').value;
-            const r = await fetch(`${API}/api/update_password`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({username:user, new_password:new_p})
-            });
-            const d = await r.json();
-            if(d.status === "success") alert("Готово!");
+            const pass = document.getElementById('new-p').value;
+            if (pass.length < 4) return alert("Пароль слишком короткий!");
+
+            // В твоем сервере пока нет эндпоинта смены пароля, 
+            // поэтому здесь пока просто имитация/заглушка
+            alert("Функция смены пароля будет добавлена в следующем обновлении сервера.");
         }
     </script>
 </body>

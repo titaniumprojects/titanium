@@ -2,97 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TITANIUM | Пополнение</title>
     <style>
-        :root { --bg: #05050a; --card: #0c0c14; --primary: #5f6eff; --text: #ffffff; --accent: #4caf50; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        .header { text-align: center; margin-bottom: 40px; }
-        h1 { color: var(--primary); letter-spacing: 2px; }
-
-        .tariffs { display: grid; gap: 20px; width: 100%; max-width: 900px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-
-        .card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; transition: 0.3s; position: relative; }
-        .card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        
-        .price { font-size: 2.5rem; font-weight: bold; margin: 15px 0; color: var(--accent); }
-        .duration { color: #888; font-size: 0.9rem; margin-bottom: 20px; display: block; }
-        
-        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:hover { background: #4a56d4; }
-
-        .back-link { margin-top: 30px; color: #555; text-decoration: none; font-size: 0.9rem; }
-        .back-link:hover { color: white; }
-
-        #status { margin-top: 20px; font-size: 0.9rem; color: #5f6eff; }
+        body { background: #05050a; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        .card { background: #0c0c14; padding: 30px; border-radius: 20px; border: 1px solid #1a1a2e; max-width: 400px; margin: 20px auto; }
+        .price { color: #4caf50; font-size: 20px; margin: 15px 0; }
+        button { background: #5f6eff; border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        #status { margin-top: 20px; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h1>ВЫБОР ПОДПИСКИ</h1>
-    <p>Выберите подходящий тариф для TITANIUM</p>
-</div>
-
-<div class="tariffs">
+    <h1>TOP UP BALANCE</h1>
     <div class="card">
-        <h3>LITE</h3>
-        <span class="duration">1 НЕДЕЛЯ</span>
-        <div class="price">149₽</div>
-        <button class="btn" onclick="createPay(149)">КУПИТЬ</button>
+        <h3>ПОПОЛНИТЬ ЧЕРЕЗ CRYPTO</h3>
+        <p style="font-size: 12px; color: gray;">Минимальная сумма: 100₽</p>
+        <input type="number" id="amount" placeholder="Сумма в рублях" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:none;">
+        <button onclick="createPay()">СОЗДАТЬ СЧЕТ</button>
+        <div id="status"></div>
     </div>
+    <a href="home.html" style="color: #555; text-decoration: none;">← Вернуться</a>
 
-    <div class="card" style="border-color: var(--primary);">
-        <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--primary); padding:2px 10px; border-radius:10px; font-size:0.7rem;">POPULAR</div>
-        <h3>MEDIUM</h3>
-        <span class="duration">2 НЕДЕЛИ</span>
-        <div class="price">299₽</div>
-        <button class="btn" onclick="createPay(299)">КУПИТЬ</button>
-    </div>
+    <script>
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        const user = localStorage.getItem('username');
 
-    <div class="card">
-        <h3>ULTRA</h3>
-        <span class="duration">1 МЕСЯЦ</span>
-        <div class="price">499₽</div>
-        <button class="btn" onclick="createPay(499)">КУПИТЬ</button>
-    </div>
-</div>
+        async function createPay() {
+            const amount = document.getElementById('amount').value;
+            if(amount < 100) return alert("Минимум 100₽!");
 
-<div id="status"></div>
+            const status = document.getElementById('status');
+            status.innerText = "Генерация счета...";
 
-<a href="home.html" class="back-link">← Вернуться назад</a>
+            try {
+                const res = await fetch(`${API}/create_invoice`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, amount: amount })
+                });
+                const data = await res.json();
 
-<script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const user = localStorage.getItem('username');
-
-    if (!user) window.location.href = "login.html";
-
-    async function createPay(amount) {
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerText = "Генерация счета...";
-
-        try {
-            const res = await fetch(`${API}/create_invoice`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, amount: amount })
-            });
-            const data = await res.json();
-
-            if (data.status === "success") {
-                statusDiv.innerHTML = `Счет создан! <a href="${data.pay_url}" target="_blank" style="color:white; font-weight:bold;">ОПЛАТИТЬ В CRYPTO BOT</a>`;
-                // Открываем ссылку в новом окне
-                window.open(data.pay_url, '_blank');
-            } else {
-                statusDiv.innerText = "Ошибка: " + data.message;
-            }
-        } catch (e) {
-            statusDiv.innerText = "Сервер оплаты недоступен";
+                if (data.status === "success") {
+                    status.innerHTML = `<a href="${data.pay_url}" target="_blank" style="color:#4caf50; font-weight:bold; text-decoration:none;">НАЖМИТЕ ЗДЕСЬ ДЛЯ ОПЛАТЫ</a>`;
+                    window.open(data.pay_url, '_blank');
+                } else {
+                    status.innerText = "Ошибка: " + data.message;
+                }
+            } catch (e) { status.innerText = "Сервер оплаты недоступен."; }
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
