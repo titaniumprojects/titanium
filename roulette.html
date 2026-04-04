@@ -2,222 +2,137 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TITANIUM | Daily Roulette</title>
+    <title>TITANIUM | Рулетка</title>
     <style>
-        :root { 
-            --bg: #05050a; 
-            --card: #0c0c14; 
-            --primary: #5f6eff; 
-            --border: #1a1a2e; 
-            --win: #4caf50; 
+        body {
+            background: #0a0f0a;
+            color: #ccffcc;
+            text-align: center;
+            padding: 40px;
         }
-        
-        body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 40px 20px; 
-            margin: 0; 
-        }
-
-        .roulette-wrapper {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card);
-            border: 1px solid var(--border);
+        .viewport {
+            width: 90%;
+            height: 100px;
+            background: #060906;
             border-radius: 20px;
-            padding: 30px;
+            margin: 30px auto;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            border: 1px solid #2a4d2a;
         }
-
         .pointer {
             position: absolute;
             top: 0;
             left: 50%;
-            transform: translateX(-50%);
             width: 4px;
             height: 100%;
-            background: var(--primary);
-            z-index: 10;
-            box-shadow: 0 0 15px var(--primary);
+            background: #2ecc2e;
+            z-index: 5;
+            transform: translateX(-50%);
         }
-
         .track {
             display: flex;
-            gap: 10px;
-            transition: transform 8s cubic-bezier(0.1, 0, 0.1, 1);
+            position: absolute;
+            height: 100%;
             will-change: transform;
         }
-
         .item {
-            min-width: 150px;
-            height: 150px;
-            background: #161625;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            min-width: 140px;
+            height: 100%;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            background: #0c120c;
+            border-right: 1px solid #1f3a1f;
             font-weight: bold;
-            font-size: 18px;
-            text-align: center;
-            color: white;
         }
-
-        .btn-spin {
-            margin-top: 40px;
-            padding: 15px 60px;
-            background: var(--primary);
+        button {
+            background: #2ecc2e;
             border: none;
-            color: white;
+            padding: 14px 40px;
+            border-radius: 40px;
             font-weight: bold;
-            border-radius: 10px;
             cursor: pointer;
-            font-size: 18px;
-            transition: 0.3s;
+            margin-top: 20px;
         }
-
-        .btn-spin:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; }
-
-        /* Модальное окно выигрыша */
-        #winModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        .win-card {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid var(--win);
-            text-align: center;
+        a {
+            color: #8bc48b;
+            display: block;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
-
-    <h1 style="margin-bottom: 50px;">ЕЖЕДНЕВНЫЙ БОНУС</h1>
-
-    <div class="roulette-wrapper">
+    <h2>🎰 VIP РУЛЕТКА</h2>
+    <div class="viewport">
         <div class="pointer"></div>
-        <div class="track" id="track"></div>
+        <div id="track" class="track"></div>
     </div>
+    <button id="spinBtn" onclick="doSpin()">КРУТИТЬ</button>
+    <a href="index.html">← Назад</a>
 
-    <button class="btn-spin" id="spinBtn" onclick="spin()">КРУТИТЬ БЕСПЛАТНО</button>
-    <a href="home.html" style="margin-top: 20px; color: #555; text-decoration: none;">← Вернуться в кабинет</a>
-
-    <div id="winModal">
-        <div class="win-card">
-            <h2 style="color: var(--win)">ВЫ ВЫИГРАЛИ!</h2>
-            <h1 id="winName">0 ₽</h1>
-            <button class="btn-spin" onclick="claimReward()" style="background: var(--win)">ЗАБРАТЬ ПРИЗ</button>
-        </div>
-    </div>
-
-    <script src="config.js"></script>
     <script>
-        const user = localStorage.getItem('username');
-        if (!user) window.location.href = "login.html";
+        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = "login.html";
 
+        const prizes = ["10 ₽", "30 ₽", "70 ₽", "150 ₽", "ULTRA", "50 ₽"];
         const track = document.getElementById('track');
-        // Визуальные элементы для массовки в анимации
-        const itemsList = ["10 ₽", "50 ₽", "100 ₽", "500 ₽", "ULTRA", "10 ₽", "50 ₽"];
 
-        function initTrack() {
-            track.innerHTML = "";
+        function init() {
+            track.innerHTML = '';
             for (let i = 0; i < 80; i++) {
-                const rand = itemsList[Math.floor(Math.random() * itemsList.length)];
                 const div = document.createElement('div');
                 div.className = 'item';
-                div.innerHTML = `<span>${rand}</span>`;
+                div.innerText = prizes[Math.floor(Math.random() * prizes.length)];
                 track.appendChild(div);
             }
         }
 
-        function checkCooldown() {
-            const last = localStorage.getItem(`lastSpin_${user}`);
-            const btn = document.getElementById('spinBtn');
-            if (last && Date.now() - parseInt(last) < 24 * 60 * 60 * 1000) {
-                btn.disabled = true;
-                btn.innerText = "ПРИХОДИТЕ ЗАВТРА";
-            }
-        }
-
-        async function spin() {
+        async function doSpin() {
             const btn = document.getElementById('spinBtn');
             btn.disabled = true;
 
             try {
-                // 1. Спрашиваем у твоего server.py результат прокрутки
-                const response = await fetch(`${API}/api/roulette/spin`, {
+                const res = await fetch(`${API}/api/roulette/spin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user })
+                    body: JSON.stringify({ username })
                 });
-                const data = await response.json();
+                const data = await res.json();
 
-                // Если сервер не дал крутить (например, КД)
                 if (data.status === "error") {
                     alert(data.message);
-                    checkCooldown(); // На всякий случай обновляем UI
+                    btn.disabled = false;
                     return;
                 }
 
-                // 2. Сервер разрешил и выдал приз
-                const winName = data.win; 
-
-                // 3. Подготовка анимации
-                const itemWidth = 160; 
-                const winIndex = 65; 
-                const offset = (winIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
-                const randomExtra = Math.floor(Math.random() * 60) - 30;
+                const win = data.win;
+                const idx = 45;
+                const offset = (idx * 150) - (track.parentElement.offsetWidth / 2) + 75;
 
                 track.style.transition = 'none';
                 track.style.transform = 'translateX(0)';
-                initTrack();
-                
-                // Вставляем реальный выигрыш с сервера в точку остановки рулетки
-                track.children[winIndex].innerHTML = `<span style="color: var(--win)">${winName}</span>`;
+                init();
+                track.children[idx].innerText = win;
+                track.children[idx].style.color = "#2ecc2e";
 
-                // 4. Запуск визуальной части
                 setTimeout(() => {
-                    track.style.transition = 'transform 8s cubic-bezier(0.1, 0, 0.1, 1)';
-                    track.style.transform = `translateX(-${offset + randomExtra}px)`;
-                }, 50);
+                    track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
+                    track.style.transform = `translateX(-${offset + (Math.random() * 40 - 20)}px)`;
+                }, 20);
 
-                // 5. Окончание прокрутки
                 setTimeout(() => {
-                    document.getElementById('winName').innerText = winName;
-                    document.getElementById('winModal').style.display = 'flex';
-                    
-                    // Записываем локально, чтобы кнопка сразу заблокировалась
-                    localStorage.setItem(`lastSpin_${user}`, Date.now());
-                }, 8500);
-
-            } catch (e) {
-                alert("Ошибка связи с сервером TITANIUM");
+                    alert(`🏆 ВЫИГРЫШ: ${win}`);
+                    btn.disabled = false;
+                }, 6200);
+            } catch(e) {
+                alert("Ошибка сервера");
                 btn.disabled = false;
             }
         }
 
-        function claimReward() {
-            // Сервер УЖЕ зачислил деньги в функции spin на бэкенде.
-            // Нам остается только вернуть пользователя на главную, где sync() подтянет новый баланс.
-            window.location.href = "home.html";
-        }
-
-        initTrack();
-        checkCooldown();
+        init();
     </script>
 </body>
 </html>

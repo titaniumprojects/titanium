@@ -4,66 +4,109 @@
     <meta charset="UTF-8">
     <title>TITANIUM | Магазин</title>
     <style>
-        body { background: #05050a; color: white; font-family: sans-serif; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
-        .card { background: #0c0c14; border: 1px solid #1a1a2e; border-radius: 12px; padding: 25px; text-align: center; display: flex; flex-direction: column; }
-        .price { color: #4caf50; font-size: 24px; font-weight: bold; margin: 15px 0; }
-        button { background: #5f6eff; border: none; color: white; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: auto; }
-        button:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; border: 1px solid #333; }
-        .back { display:block; margin-top:30px; color:#555; text-decoration:none; text-align:center; }
+        body {
+            background: #0a0f0a;
+            color: #ccffcc;
+            font-family: monospace;
+            padding: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+        .card {
+            background: #0e150e;
+            border: 1px solid #2a4d2a;
+            border-radius: 28px;
+            padding: 24px;
+            text-align: center;
+        }
+        .price {
+            font-size: 28px;
+            color: #2ecc2e;
+            margin: 15px 0;
+        }
+        button {
+            background: #2ecc2e;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #2a4d2a;
+            cursor: not-allowed;
+        }
+        a {
+            color: #8bc48b;
+            display: inline-block;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <h2 style="color:#5f6eff; margin-bottom: 30px;">STORE</h2>
-    <div id="list" class="grid">Загрузка товаров...</div>
-    <a href="home.html" class="back">← Вернуться на главную</a>
+    <h2 style="text-align:center;">🛒 МАГАЗИН</h2>
+    <div id="items" class="grid"></div>
+    <div style="text-align:center;"><a href="index.html">← На главную</a></div>
 
     <script>
         const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const user = localStorage.getItem('username');
-        if (!user) window.location.href = "login.html";
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = "login.html";
 
         async function load() {
             try {
-                const res = await fetch(`${API}/api/market`);
-                const items = await res.json();
-                
-                const uRes = await fetch(`${API}/login`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: user, password: ""})
-                });
-                const uData = await uRes.json();
+                const [marketRes, userRes] = await Promise.all([
+                    fetch(`${API}/api/market`),
+                    fetch(`${API}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password: "" })
+                    })
+                ]);
+                const items = await marketRes.json();
+                const user = await userRes.json();
+                const purchases = user.purchases || [];
 
-                const list = document.getElementById('list');
-                if(!items.length) { list.innerHTML = "Товаров пока нет"; return; }
-
-                const purchases = uData.purchases || [];
-
-                list.innerHTML = items.map(i => `
+                const container = document.getElementById('items');
+                container.innerHTML = items.map(item => `
                     <div class="card">
-                        <h3 style="margin: 0 0 10px 0;">${i.title}</h3>
-                        <p style="color:#888; font-size:13px; margin: 0; flex: 1;">${i.desc}</p>
-                        <div class="price">${i.price}₽</div>
-                        ${purchases.includes(i.id) 
-                            ? `<button disabled>ПРИОБРЕТЕНО</button>` 
-                            : `<button onclick="buy('${i.id}')">КУПИТЬ</button>`}
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                        <div class="price">${item.price} ₽</div>
+                        ${purchases.includes(item.id) 
+                            ? '<button disabled>✅ КУПЛЕНО</button>' 
+                            : `<button onclick="buy('${item.id}')">КУПИТЬ</button>`}
                     </div>
                 `).join('');
-            } catch(e) { document.getElementById('list').innerHTML = "Ошибка загрузки"; }
+            } catch(e) {
+                document.getElementById('items').innerHTML = "<p>Ошибка загрузки</p>";
+            }
         }
 
         async function buy(id) {
             try {
-                const r = await fetch(`${API}/api/market/buy`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: user, item_id: id })
+                const res = await fetch(`${API}/api/market/buy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, item_id: id })
                 });
-                const d = await r.json();
-                if(d.status === "success") { alert("Успешная покупка!"); load(); }
-                else alert(d.message);
-            } catch(e) { alert("Ошибка сервера"); }
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Покупка успешна!");
+                    load();
+                } else {
+                    alert(data.message || "Ошибка");
+                }
+            } catch(e) {
+                alert("Сервер недоступен");
+            }
         }
-        
+
         load();
     </script>
 </body>

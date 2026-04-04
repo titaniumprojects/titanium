@@ -2,344 +2,325 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITANIUM | Dashboard</title>
+    <title>TITANIUM | Главная</title>
     <style>
-        :root {
-            --bg: #05050a;
-            --card: #0c0c14;
-            --primary: #5f6eff;
-            --primary-glow: rgba(95, 110, 255, 0.3);
-            --border: #1a1a2e;
-            --text-main: #ffffff;
-            --text-dim: #888;
-            --accent: #4caf50;
-            --radius: 18px;
-        }
-
-        * { box-sizing: border-box; transition: all 0.3s ease; }
-
-        body {
-            background: var(--bg);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif;
+        * {
             margin: 0;
-            display: grid;
-            grid-template-columns: 280px 1fr;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', monospace;
+        }
+        body {
+            background: #0a0f0a;
+            color: #ccffcc;
+            display: flex;
             height: 100vh;
             overflow: hidden;
         }
-
-        /* Sidebar */
         .sidebar {
-            background: var(--card);
-            border-right: 1px solid var(--border);
-            padding: 30px 20px;
+            width: 280px;
+            background: #0c120c;
+            border-right: 1px solid #1f3a1f;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-            z-index: 10;
         }
-
         .logo {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 800;
-            color: var(--primary);
-            letter-spacing: 4px;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 0 0 15px var(--primary-glow);
+            color: #2ecc2e;
+            text-shadow: 0 0 8px #2ecc2e;
+            margin-bottom: 35px;
         }
-
         .profile-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: #0e150e;
+            border: 1px solid #2a4d2a;
+            border-radius: 24px;
             padding: 20px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-
         .avatar {
-            width: 65px; height: 65px;
-            background: var(--primary);
+            width: 70px;
+            height: 70px;
+            background: #1f3a1f;
             border-radius: 50%;
             margin: 0 auto 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 26px; font-weight: bold;
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        .status-container { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-top: 10px; }
-        .status-item {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 10px;
-            display: flex; justify-content: space-between; font-size: 12px;
-        }
-
-        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .nav-item {
-            padding: 12px 15px;
-            border-radius: 12px;
-            color: var(--text-dim);
-            text-decoration: none;
-            display: flex; align-items: center; gap: 12px; font-weight: 500;
-        }
-        .nav-item:hover, .nav-item.active { background: rgba(95, 110, 255, 0.1); color: var(--primary); }
-
-        /* Main Content */
-        .main {
-            padding: 30px;
-            overflow-y: auto;
             display: flex;
-            flex-direction: column;
-            gap: 30px;
-            background: radial-gradient(circle at top right, #0a0a1a, transparent);
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #2ecc2e;
+            border: 1px solid #2ecc2e;
         }
-
-        /* Roulette UI */
-        .roulette-section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+        .status-item {
+            background: #0a0f0a;
+            border: 1px solid #2a4d2a;
+            padding: 8px 12px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .nav-item {
+            padding: 12px 16px;
+            margin: 5px 0;
+            border-radius: 16px;
+            color: #8bc48b;
+            text-decoration: none;
+            display: flex;
+            gap: 12px;
+            font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: #1a2e1a;
+            color: #2ecc2e;
+        }
+        .logout {
+            margin-top: auto;
+            text-align: center;
+            font-size: 13px;
+            color: #5a7e5a;
+            cursor: pointer;
+            padding-top: 20px;
+        }
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px 30px;
+        }
+        .roulette-card {
+            background: #0e150e;
+            border: 1px solid #2a4d2a;
+            border-radius: 28px;
             padding: 20px;
-            position: relative;
+            margin-bottom: 30px;
         }
-
-        .roulette-viewport {
+        .viewport {
             width: 100%;
-            height: 80px;
-            background: #05050a;
-            border-radius: 12px;
+            height: 90px;
+            background: #060906;
+            border-radius: 20px;
             position: relative;
             overflow: hidden;
-            border: 1px solid var(--border);
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
-
         .pointer {
             position: absolute;
-            top: 0; left: 50%;
-            width: 3px; height: 100%;
-            background: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background: #2ecc2e;
+            box-shadow: 0 0 12px #2ecc2e;
             z-index: 5;
             transform: translateX(-50%);
         }
-
         .track {
             display: flex;
             position: absolute;
-            left: 0; top: 0;
             height: 100%;
             will-change: transform;
         }
-
-        .item {
-            min-width: 120px;
+        .track-item {
+            min-width: 130px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            border-right: 1px solid #1a1a2e;
-            font-size: 14px;
-            background: linear-gradient(180deg, #0c0c14, #08080f);
+            background: #0c120c;
+            border-right: 1px solid #1f3a1f;
         }
-
         .spin-btn {
-            background: var(--primary);
-            border: none; color: white;
-            padding: 12px 30px;
-            border-radius: 10px;
-            cursor: pointer;
+            background: #2ecc2e;
+            border: none;
+            padding: 12px 28px;
             font-weight: bold;
-            display: block; margin: 0 auto;
-            box-shadow: 0 4px 15px var(--primary-glow);
+            border-radius: 40px;
+            cursor: pointer;
+            color: #000;
+            display: block;
+            margin: 0 auto;
         }
-        .spin-btn:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; box-shadow: none; }
-
-        .logout { color: #444; font-size: 12px; text-align: center; margin-top: 20px; cursor: pointer; }
+        .spin-btn:disabled {
+            background: #2a4d2a;
+            cursor: not-allowed;
+        }
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .market-item {
+            background: #0e150e;
+            border: 1px solid #2a4d2a;
+            border-radius: 24px;
+            padding: 18px;
+        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="logo">TITANIUM</div>
-        
-        <div class="profile-card">
-            <div class="avatar" id="avatar-init">?</div>
-            <div class="username" id="user-display">Loading...</div>
-            
-            <div class="status-container">
-                <div class="status-item">
-                    <span style="color:var(--text-dim)">Subscription</span>
-                    <span style="color:var(--accent)" id="sub-status">Active</span>
-                </div>
-                <div class="status-item">
-                    <span style="color:var(--text-dim)">Balance</span>
-                    <span id="stat-bal">0 ₽</span>
-                </div>
-            </div>
+<div class="sidebar">
+    <div class="logo">TITANIUM</div>
+    <div class="profile-card">
+        <div class="avatar" id="avatarInit">T</div>
+        <div class="username" id="userName">Загрузка...</div>
+        <div class="status-item"><span>💰 Баланс</span><span id="balanceVal">0 ₽</span></div>
+        <div class="status-item"><span>🎫 Статус</span><span id="subStatus">USER</span></div>
+    </div>
+
+    <nav>
+        <a href="index.html" class="nav-item active">🏠 Главная</a>
+        <a href="store.html" class="nav-item">🛒 Магазин</a>
+        <a href="roulette.html" class="nav-item">🎰 Рулетка</a>
+        <a href="forum.html" class="nav-item">💬 Форум</a>
+        <a href="purchase.html" class="nav-item">💳 Пополнение</a>
+        <a href="settings.html" class="nav-item">⚙️ Настройки</a>
+        <a href="admin.html" id="adminLink" class="nav-item" style="display:none;">🛠 Админ</a>
+    </nav>
+
+    <div class="logout" onclick="logout()">🚪 Выйти</div>
+</div>
+
+<main class="main">
+    <div class="roulette-card">
+        <h3>🎁 Ежедневная рулетка</h3>
+        <div class="viewport">
+            <div class="pointer"></div>
+            <div id="track" class="track"></div>
         </div>
+        <button class="spin-btn" id="spinBtn" onclick="spin()">КРУТИТЬ</button>
+        <div id="cdInfo" style="text-align:center; font-size:13px; margin-top:12px;"></div>
+    </div>
 
-        <nav class="nav-menu">
-            <a href="home.html" class="nav-item active">🏠 Главная</a>
-            <a href="store.html" class="nav-item">🛒 Магазин</a>
-            <a href="roulette.html" class="nav-item">🎰 Рулетка</a>
-            <a href="forum.html" class="nav-item">💬 Сообщество</a>
-            <a href="purchase.html" class="nav-item">💳 Пополнение</a>
-            <a href="settings.html" class="nav-item">⚙️ Настройки</a>
-            <a href="admin.html" id="admin-link" class="nav-item" style="display:none; color:#ff4b4b;">🛠 Админ-панель</a>
-        </nav>
+    <h3>🔥 Товары</h3>
+    <div id="marketList" class="market-grid"></div>
+</main>
 
-        <div onclick="logout()" class="logout">Выйти из системы</div>
-    </aside>
+<script>
+    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
+    const username = localStorage.getItem('username');
 
-    <main class="main">
-        <section class="roulette-section">
-            <h3 style="margin-top:0;">Ежедневный бонус</h3>
-            <div class="roulette-viewport">
-                <div class="pointer"></div>
-                <div id="track" class="track"></div>
-            </div>
-            <button class="spin-btn" id="spinBtn" onclick="spin()">КРУТИТЬ БЕСПЛАТНО</button>
-            <div id="cooldown" style="text-align:center; font-size:12px; color:var(--text-dim); margin-top:10px;"></div>
-        </section>
+    if (!username) window.location.href = "login.html";
 
-        <div id="market-list" class="market-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-            </div>
-    </main>
+    document.getElementById('userName').innerText = username;
+    document.getElementById('avatarInit').innerText = username[0].toUpperCase();
 
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const username = localStorage.getItem('username');
+    async function sync() {
+        try {
+            const res = await fetch(`${API}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: "" })
+            });
+            const data = await res.json();
+            document.getElementById('balanceVal').innerText = (data.balance || 0) + " ₽";
+            if (data.is_admin) document.getElementById('adminLink').style.display = "flex";
+        } catch(e) {}
+    }
 
-        if (!username) window.location.href = "login.html";
+    async function loadMarket() {
+        try {
+            const r = await fetch(`${API}/api/market`);
+            const items = await r.json();
+            const container = document.getElementById('marketList');
+            container.innerHTML = items.slice(0, 4).map(item => `
+                <div class="market-item">
+                    <strong>${item.title}</strong><br>
+                    <span style="color:#2ecc2e;">${item.price} ₽</span>
+                    <div style="margin-top:12px;"><a href="store.html">Купить</a></div>
+                </div>
+            `).join('');
+        } catch(e) {}
+    }
 
-        document.getElementById('user-display').innerText = username;
-        document.getElementById('avatar-init').innerText = username[0].toUpperCase();
+    const rewards = ["10 ₽", "25 ₽", "50 ₽", "100 ₽", "ULTRA", "20 ₽", "5 ₽"];
+    const track = document.getElementById('track');
 
-        const track = document.getElementById('track');
-        const rewards = ["5₽", "10₽", "20₽", "50₽", "ULTRA", "10₽", "5₽", "100₽"];
+    function initTrack() {
+        track.innerHTML = '';
+        for (let i = 0; i < 70; i++) {
+            const div = document.createElement('div');
+            div.className = 'track-item';
+            div.innerText = rewards[Math.floor(Math.random() * rewards.length)];
+            track.appendChild(div);
+        }
+    }
 
-        function initTrack() {
-            track.innerHTML = '';
-            for(let i=0; i<60; i++) {
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.innerText = rewards[Math.floor(Math.random() * rewards.length)];
-                track.appendChild(div);
+    async function spin() {
+        const btn = document.getElementById('spinBtn');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${API}/api/roulette/spin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const result = await response.json();
+
+            if (result.status === "error") {
+                alert(result.message);
+                btn.disabled = false;
+                return;
             }
-        }
 
-        async function sync() {
-            try {
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: username, password: ""})
-                });
-                const data = await res.json();
-                
-                document.getElementById('stat-bal').innerText = (data.balance || 0) + " ₽";
-                if (data.is_admin) document.getElementById('admin-link').style.display = "flex";
-                
-                // Подгрузка магазина (опционально, если нужно на главной)
-                loadMarket(data.purchases || []);
-            } catch(e) { console.error("Sync error"); }
-        }
+            const win = result.win;
+            const winIndex = 38;
+            const itemW = 131;
+            const offset = (winIndex * itemW) - (track.parentElement.offsetWidth / 2) + (itemW / 2);
 
-        async function loadMarket(purchases) {
-            try {
-                const r = await fetch(`${API}/api/market`);
-                const items = await r.json();
-                const list = document.getElementById('market-list');
-                list.innerHTML = items.slice(0, 3).map(i => `
-                    <div style="background:var(--card); padding:20px; border-radius:15px; border:1px solid var(--border);">
-                        <div style="font-weight:bold; color:var(--primary);">${i.title}</div>
-                        <div style="font-size:20px; margin:10px 0;">${i.price} ₽</div>
-                        <button onclick="location.href='store.html'" style="width:100%; background:var(--border); border:none; color:white; padding:8px; border-radius:5px; cursor:pointer;">Смотреть</button>
-                    </div>
-                `).join('');
-            } catch(e) {}
-        }
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0)';
+            initTrack();
+            track.children[winIndex].innerText = win;
+            track.children[winIndex].style.color = "#2ecc2e";
 
-        function checkCooldown() {
-            const last = localStorage.getItem(`lastSpin_${username}`);
-            const btn = document.getElementById('spinBtn');
-            const cd = document.getElementById('cooldown');
-            
-            if(last) {
-                const diff = Date.now() - parseInt(last);
-                if(diff < 86400000) {
-                    btn.disabled = true;
-                    const hours = Math.ceil((86400000 - diff) / 3600000);
-                    cd.innerText = `Бонус будет доступен через ${hours} ч.`;
-                    return false;
-                }
-            }
+            setTimeout(() => {
+                track.style.transition = 'transform 5s cubic-bezier(0.1, 0, 0.1, 1)';
+                track.style.transform = `translateX(-${offset + (Math.random() * 30 - 15)}px)`;
+            }, 20);
+
+            setTimeout(() => {
+                alert(`🎉 Вы выиграли: ${win}`);
+                localStorage.setItem(`lastSpin_${username}`, Date.now());
+                sync();
+                checkCooldown();
+                btn.disabled = false;
+            }, 5200);
+        } catch (e) {
+            alert("Ошибка сервера");
             btn.disabled = false;
-            cd.innerText = "Бонус готов!";
-            return true;
         }
+    }
 
-        async function spin() {
-            const btn = document.getElementById('spinBtn');
-            
-            try {
-                // 1. Запрос к серверу
-                const response = await fetch(`${API}/api/roulette/spin`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: username })
-                });
-                const result = await response.json();
-
-                if (result.status === "error") {
-                    alert(result.message);
-                    return;
-                }
-
-                // 2. Анимация
-                btn.disabled = true;
-                const winName = result.win; 
-                const itemWidth = 121; 
-                const winIndex = 45; 
-                const offset = (winIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
-                
-                track.style.transition = 'none';
-                track.style.transform = 'translateX(0)';
-                initTrack();
-                
-                track.children[winIndex].innerText = winName;
-                track.children[winIndex].style.color = "var(--primary)";
-
-                setTimeout(() => {
-                    track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
-                    track.style.transform = `translateX(-${offset + (Math.random()*40 - 20)}px)`;
-                }, 50);
-
-                // 3. Итог
-                setTimeout(() => {
-                    alert(`Поздравляем! Ваш выигрыш: ${winName}`);
-                    localStorage.setItem(`lastSpin_${username}`, Date.now());
-                    checkCooldown();
-                    sync(); // Обновляем баланс в боковом меню
-                }, 6500);
-
-            } catch (e) {
-                alert("Сервер недоступен");
-            }
+    function checkCooldown() {
+        const last = localStorage.getItem(`lastSpin_${username}`);
+        const btn = document.getElementById('spinBtn');
+        const cdDiv = document.getElementById('cdInfo');
+        if (last && Date.now() - parseInt(last) < 86400000) {
+            btn.disabled = true;
+            const hours = Math.ceil((86400000 - (Date.now() - parseInt(last))) / 3600000);
+            cdDiv.innerText = `⏳ Доступно через ${hours} ч`;
+        } else {
+            cdDiv.innerText = "✅ Бонус доступен!";
         }
+    }
 
-        function logout() { localStorage.removeItem('username'); window.location.href = "login.html"; }
+    function logout() {
+        localStorage.removeItem('username');
+        window.location.href = "login.html";
+    }
 
-        initTrack();
-        checkCooldown();
-        sync();
-    </script>
+    initTrack();
+    checkCooldown();
+    sync();
+    loadMarket();
+</script>
 </body>
 </html>
