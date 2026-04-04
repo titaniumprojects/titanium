@@ -4,38 +4,64 @@
     <meta charset="UTF-8">
     <title>TITANIUM | Login</title>
     <style>
-        body { background: #05050a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #1a1a2e; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        body { background: #05050a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0c0c14; padding: 40px; border-radius: 20px; border: 1px solid #1a1a2e; text-align: center; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #5f6eff; margin-bottom: 25px; letter-spacing: 2px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #161625; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #5f6eff; }
+        button { width: 100%; padding: 12px; background: #5f6eff; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #4a59e6; }
+        button:disabled { background: #333; cursor: not-allowed; }
+        .links { margin-top: 20px; font-size: 13px; }
+        .links a { color: #888; text-decoration: none; }
+        .links a:hover { color: #fff; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1 style="color:#5f6eff">TITANIUM</h1>
+        <h1>TITANIUM</h1>
         <input type="text" id="u" placeholder="Логин">
         <input type="password" id="p" placeholder="Пароль">
-        <button onclick="doLogin()">ВОЙТИ</button>
-        <a href="register.html" style="color:gray; font-size:12px; display:block; margin-top:15px; text-decoration:none;">Регистрация</a>
+        <button id="btn" onclick="doLogin()">ВОЙТИ</button>
+        <div class="links">
+            <a href="register.html">Создать аккаунт</a>
+        </div>
     </div>
 
     <script src="config.js"></script>
     <script>
         async function doLogin() {
-            const u = document.getElementById('u').value;
-            const p = document.getElementById('p').value;
+            const u = document.getElementById('u').value.trim();
+            const p = document.getElementById('p').value.trim();
+            const btn = document.getElementById('btn');
+
+            if(!u) return alert("Введите логин");
+
+            btn.disabled = true;
+            btn.innerText = "ВХОД...";
+
             try {
                 const res = await fetch(`${API}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: u, password: p })
                 });
+                
                 const data = await res.json();
+                
                 if (data.status === "success") {
-                    localStorage.setItem('username', u);
+                    localStorage.setItem('username', data.username);
                     window.location.href = "home.html";
-                } else { alert(data.message); }
-            } catch(e) { alert("Сервер недоступен"); }
+                } else {
+                    alert(data.message || "Неверный логин или пароль");
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Ошибка: Сервер TITANIUM недоступен (проверьте ngrok)");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "ВОЙТИ";
+            }
         }
     </script>
 </body>

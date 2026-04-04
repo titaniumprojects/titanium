@@ -1,15 +1,11 @@
-// Твой статический URL ngrok
+// Конфигурация API
 const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
 
-// Добавляем глобальную настройку для fetch, чтобы ngrok не показывал страницу-заглушку
-const originalFetch = window.fetch;
-window.fetch = function() {
-    let [resource, config] = arguments;
-    if (!config) config = {};
-    if (!config.headers) config.headers = {};
-    
-    // Добавляем заголовок, который отключает предупреждение ngrok
-    config.headers['ngrok-skip-browser-warning'] = 'true';
-    
-    return originalFetch(resource, config);
-};
+// Проверка авторизации (утилита)
+function checkAuth() {
+    const user = localStorage.getItem('username');
+    if (!user && !window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
+        window.location.href = "login.html";
+    }
+    return user;
+}
