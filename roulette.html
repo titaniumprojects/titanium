@@ -31,228 +31,189 @@
             border-radius: 20px;
             padding: 30px;
             position: relative;
+            overflow: hidden;
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
 
         .pointer {
             position: absolute;
-            top: 20px;
+            top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 3px;
-            height: 160px;
-            background: #ff4b4b;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
             z-index: 10;
-            box-shadow: 0 0 15px rgba(255, 75, 75, 0.8);
-        }
-
-        .view-port {
-            width: 100%;
-            height: 140px;
-            overflow: hidden;
-            background: #080810;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            position: relative;
+            box-shadow: 0 0 15px var(--primary);
         }
 
         .track {
             display: flex;
-            align-items: center;
-            height: 100%;
+            gap: 10px;
+            transition: transform 8s cubic-bezier(0.1, 0, 0.1, 1);
             will-change: transform;
         }
 
         .item {
             min-width: 150px;
-            height: 110px;
-            margin: 0 10px;
-            background: #11111f;
-            border-bottom: 4px solid #333;
-            border-radius: 8px;
+            height: 150px;
+            background: #161625;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        /* Цвета редкости */
-        .common { border-color: #888; color: #eee; }
-        .rare { border-color: #5f6eff; color: #5f6eff; }
-        .legendary { border-color: #ffeb3b; color: #ffeb3b; text-shadow: 0 0 10px rgba(255, 235, 59, 0.3); }
-
-        .controls { margin-top: 30px; text-align: center; }
-        
-        .btn-spin {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 18px 50px;
-            font-size: 18px;
             font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
+            font-size: 18px;
+            text-align: center;
+            color: white;
         }
 
-        .btn-spin:disabled { background: #222; color: #555; cursor: not-allowed; }
-        
-        #timer { margin-top: 15px; color: #666; font-size: 14px; }
+        .btn-spin {
+            margin-top: 40px;
+            padding: 15px 60px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.3s;
+        }
 
-        /* Модальное окно */
-        .modal {
+        .btn-spin:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; }
+
+        /* Модальное окно выигрыша */
+        #winModal {
             display: none;
             position: fixed;
-            top:0; left:0; width:100%; height:100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
-            justify-content: center; align-items: center; z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
         }
-        .modal-content {
-            background: #0c0c14;
+        .win-card {
+            background: var(--card);
             padding: 40px;
             border-radius: 20px;
-            border: 2px solid var(--win);
+            border: 1px solid var(--win);
             text-align: center;
-            width: 350px;
         }
     </style>
 </head>
 <body>
 
-    <h1 style="letter-spacing: 3px;">DAILY REWARDS</h1>
-    <p style="color: #666; margin-bottom: 40px;">Испытай удачу один раз в сутки</p>
+    <h1 style="margin-bottom: 50px;">ЕЖЕДНЕВНЫЙ БОНУС</h1>
 
     <div class="roulette-wrapper">
         <div class="pointer"></div>
-        <div class="view-port">
-            <div class="track" id="track"></div>
+        <div class="track" id="track"></div>
+    </div>
+
+    <button class="btn-spin" id="spinBtn" onclick="spin()">КРУТИТЬ БЕСПЛАТНО</button>
+    <a href="home.html" style="margin-top: 20px; color: #555; text-decoration: none;">← Вернуться в кабинет</a>
+
+    <div id="winModal">
+        <div class="win-card">
+            <h2 style="color: var(--win)">ВЫ ВЫИГРАЛИ!</h2>
+            <h1 id="winName">0 ₽</h1>
+            <button class="btn-spin" onclick="claimReward()" style="background: var(--win)">ЗАБРАТЬ ПРИЗ</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn-spin" id="spinBtn" onclick="startSpin()">КРУТИТЬ БЕСПЛАТНО</button>
-        <div id="timer"></div>
-    </div>
-
-    <div class="modal" id="winModal">
-        <div class="modal-content">
-            <h2 style="color: var(--win)">ПОЗДРАВЛЯЕМ!</h2>
-            <p>Ваш выигрыш:</p>
-            <h1 id="winName" style="margin: 20px 0;"></h1>
-            <button class="btn-spin" style="background: var(--win)" onclick="claimReward()">ЗАБРАТЬ</button>
-        </div>
-    </div>
-
+    <script src="config.js"></script>
     <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         const user = localStorage.getItem('username');
+        if (!user) window.location.href = "login.html";
+
         const track = document.getElementById('track');
-        const spinBtn = document.getElementById('spinBtn');
-        const timerText = document.getElementById('timer');
-
-        // Шансы: weight чем меньше, тем реже выпадает
-        const prizes = [
-            { name: "10₽ Баланс", weight: 60, type: "common" },
-            { name: "25₽ Баланс", weight: 30, type: "common" },
-            { name: "50₽ Баланс", weight: 10, type: "rare" },
-            { name: "PRO (7 дней)", weight: 3, type: "rare" },
-            { name: "ULTRA (30 дней)", weight: 0.5, type: "legendary" }
-        ];
-
-        function getWeightedPrize() {
-            let totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-            let random = Math.random() * totalWeight;
-            for (let p of prizes) {
-                if (random < p.weight) return p;
-                random -= p.weight;
-            }
-            return prizes[0];
-        }
+        // Визуальные элементы для массовки в анимации
+        const itemsList = ["10 ₽", "50 ₽", "100 ₽", "500 ₽", "ULTRA", "10 ₽", "50 ₽"];
 
         function initTrack() {
-            track.innerHTML = '';
-            for(let i=0; i<100; i++) {
-                const p = getWeightedPrize();
+            track.innerHTML = "";
+            for (let i = 0; i < 80; i++) {
+                const rand = itemsList[Math.floor(Math.random() * itemsList.length)];
                 const div = document.createElement('div');
-                div.className = `item ${p.type}`;
-                div.innerHTML = `<span>${p.name}</span>`;
+                div.className = 'item';
+                div.innerHTML = `<span>${rand}</span>`;
                 track.appendChild(div);
             }
         }
 
         function checkCooldown() {
-            const lastSpin = localStorage.getItem(`lastSpin_${user}`);
-            if (lastSpin) {
-                const diff = Date.now() - parseInt(lastSpin);
-                const day = 24 * 60 * 60 * 1000;
-                if (diff < day) {
-                    spinBtn.disabled = true;
-                    const remaining = day - diff;
-                    startTimer(remaining);
-                    return false;
-                }
+            const last = localStorage.getItem(`lastSpin_${user}`);
+            const btn = document.getElementById('spinBtn');
+            if (last && Date.now() - parseInt(last) < 24 * 60 * 60 * 1000) {
+                btn.disabled = true;
+                btn.innerText = "ПРИХОДИТЕ ЗАВТРА";
             }
-            return true;
         }
 
-        function startTimer(ms) {
-            const update = () => {
-                if (ms <= 0) {
-                    spinBtn.disabled = false;
-                    timerText.innerText = "Рулетка доступна!";
+        async function spin() {
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+
+            try {
+                // 1. Спрашиваем у твоего server.py результат прокрутки
+                const response = await fetch(`${API}/api/roulette/spin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user })
+                });
+                const data = await response.json();
+
+                // Если сервер не дал крутить (например, КД)
+                if (data.status === "error") {
+                    alert(data.message);
+                    checkCooldown(); // На всякий случай обновляем UI
                     return;
                 }
-                const h = Math.floor(ms / 3600000);
-                const m = Math.floor((ms % 3600000) / 60000);
-                const s = Math.floor((ms % 60000) / 1000);
-                timerText.innerText = `Следующий прокрут через: ${h}ч ${m}м ${s}с`;
-                ms -= 1000;
-                setTimeout(update, 1000);
-            };
-            update();
+
+                // 2. Сервер разрешил и выдал приз
+                const winName = data.win; 
+
+                // 3. Подготовка анимации
+                const itemWidth = 160; 
+                const winIndex = 65; 
+                const offset = (winIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
+                const randomExtra = Math.floor(Math.random() * 60) - 30;
+
+                track.style.transition = 'none';
+                track.style.transform = 'translateX(0)';
+                initTrack();
+                
+                // Вставляем реальный выигрыш с сервера в точку остановки рулетки
+                track.children[winIndex].innerHTML = `<span style="color: var(--win)">${winName}</span>`;
+
+                // 4. Запуск визуальной части
+                setTimeout(() => {
+                    track.style.transition = 'transform 8s cubic-bezier(0.1, 0, 0.1, 1)';
+                    track.style.transform = `translateX(-${offset + randomExtra}px)`;
+                }, 50);
+
+                // 5. Окончание прокрутки
+                setTimeout(() => {
+                    document.getElementById('winName').innerText = winName;
+                    document.getElementById('winModal').style.display = 'flex';
+                    
+                    // Записываем локально, чтобы кнопка сразу заблокировалась
+                    localStorage.setItem(`lastSpin_${user}`, Date.now());
+                }, 8500);
+
+            } catch (e) {
+                alert("Ошибка связи с сервером TITANIUM");
+                btn.disabled = false;
+            }
         }
 
-        async function startSpin() {
-            if (!user) return alert("Войдите в аккаунт");
-            if (!checkCooldown()) return;
-
-            const winIndex = 75; // Индекс на котором остановимся
-            const itemWidth = 170; // 150px + 20px margin
-            const offset = (winIndex * itemWidth) - (track.parentElement.offsetWidth / 2) + (itemWidth / 2);
-            const randomExtra = Math.floor(Math.random() * 80) - 40;
-
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0)';
-            initTrack();
-
-            setTimeout(() => {
-                // Плавная анимация: сначала разгон, потом долгое замедление
-                track.style.transition = 'transform 8s cubic-bezier(0.1, 0, 0.1, 1)';
-                track.style.transform = `translateX(-${offset + randomExtra}px)`;
-            }, 50);
-
-            setTimeout(() => {
-                const winItem = track.children[winIndex];
-                document.getElementById('winName').innerText = winItem.innerText;
-                document.getElementById('winModal').style.display = 'flex';
-                localStorage.setItem(`lastSpin_${user}`, Date.now());
-                checkCooldown();
-            }, 8500);
-        }
-
-        async function claimReward() {
-            const prize = document.getElementById('winName').innerText;
-            // Отправка на сервер (пример)
-            await fetch(`${API}/api/admin/give`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ target: user, balance: 0, note: `Roulette: ${prize}` })
-            });
-            window.location.reload();
+        function claimReward() {
+            // Сервер УЖЕ зачислил деньги в функции spin на бэкенде.
+            // Нам остается только вернуть пользователя на главную, где sync() подтянет новый баланс.
+            window.location.href = "home.html";
         }
 
         initTrack();
