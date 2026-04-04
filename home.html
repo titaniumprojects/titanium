@@ -182,7 +182,7 @@
 
         .buy-btn:disabled { background: #1a1a2e; color: #555; cursor: not-allowed; }
 
-        .logout { color: #555; font-size: 13px; text-decoration: none; text-align: center; margin-top: 20px; }
+        .logout { color: #555; font-size: 13px; text-decoration: none; text-align: center; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -207,120 +207,11 @@
             <a href="admin.html" id="admin-link" class="nav-item admin-btn">🛠 Админ-панель</a>
         </nav>
 
-        <a href="#" onclick="logout()" class="logout">Выйти из системы</a>
+        <div onclick="logout()" class="logout">Выйти из системы</div>
     </aside>
 
     <main class="main">
         <header class="section-title">
             <span>Обзор аккаунта</span>
             <span style="font-size: 14px; color: var(--text-dim);" id="current-date"></span>
-        </header>
-
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-title">Баланс</div>
-                <div class="stat-value" id="stat-bal">0 ₽</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-title">Активных дней</div>
-                <div class="stat-value">1</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-title">Уровень доступа</div>
-                <div class="stat-value" id="user-status">User</div>
-            </div>
-        </div>
-
-        <div class="section-title">Доступные товары</div>
-        <div class="market-grid" id="market-list">
-            </div>
-    </main>
-
-    <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-        const username = localStorage.getItem('username');
-
-        // КРИТИЧЕСКАЯ ПРОВЕРКА АВТОРИЗАЦИИ
-        if (!username) {
-            window.location.href = "login.html";
-        }
-
-        document.getElementById('user-display').innerText = username;
-        document.getElementById('avatar-init').innerText = username[0].toUpperCase();
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('ru-RU');
-
-        async function sync() {
-            try {
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: username, password: ""})
-                });
-                const data = await res.json();
-                
-                if (data.status === "success") {
-                    document.getElementById('balance-side').innerText = data.balance + " ₽";
-                    document.getElementById('stat-bal').innerText = data.balance + " ₽";
-                    
-                    if (data.is_admin) {
-                        document.getElementById('admin-link').style.display = "flex";
-                        document.getElementById('user-status').innerText = "Administrator";
-                        document.getElementById('user-status').style.color = "#ff4b4b";
-                    }
-
-                    loadMarket(data.purchases || []);
-                }
-            } catch(e) { console.error("Ошибка синхронизации"); }
-        }
-
-        async function loadMarket(purchases) {
-            try {
-                const r = await fetch(`${API}/api/market`);
-                const items = await r.json();
-                const list = document.getElementById('market-list');
-                
-                list.innerHTML = items.map(i => `
-                    <div class="product-card">
-                        <div class="product-img">TITANIUM SOFT</div>
-                        <div class="product-body">
-                            <h4 style="margin: 0 0 10px 0;">${i.title}</h4>
-                            <p style="color: gray; font-size: 13px; margin-bottom: 15px;">${i.desc}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: bold; color: var(--accent);">${i.price} ₽</span>
-                                <div style="width: 120px;">
-                                    ${purchases.includes(i.id) 
-                                        ? '<button class="buy-btn" disabled>КУПЛЕНО</button>' 
-                                        : `<button class="buy-btn" onclick="buy('${i.id}')">КУПИТЬ</button>`}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) { console.error("Ошибка загрузки маркета"); }
-        }
-
-        async function buy(id) {
-            if (!confirm("Вы уверены, что хотите приобрести этот товар?")) return;
-            const r = await fetch(`${API}/api/market/buy`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: username, item_id: id})
-            });
-            const d = await r.json();
-            if (d.status === "success") {
-                alert("Поздравляем с покупкой!");
-                sync();
-            } else {
-                alert(d.message || "Ошибка при покупке");
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('username');
-            window.location.href = "login.html";
-        }
-
-        sync();
-    </script>
-</body>
-</html>
+        </

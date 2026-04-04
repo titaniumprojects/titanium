@@ -16,23 +16,26 @@
         <input type="text" id="u" placeholder="Логин">
         <input type="password" id="p" placeholder="Пароль">
         <button onclick="doLogin()">ВОЙТИ</button>
+        <a href="register.html" style="color:gray; font-size:12px; display:block; margin-top:15px; text-decoration:none;">Регистрация</a>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
         async function doLogin() {
             const u = document.getElementById('u').value;
             const p = document.getElementById('p').value;
-            const res = await fetch(`${API}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: u, password: p })
-            });
-            const data = await res.json();
-            if(data.status === "success") {
-                localStorage.setItem('username', u);
-                window.location.href = "home.html";
-            } else alert(data.message);
+            try {
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    localStorage.setItem('username', u);
+                    window.location.href = "home.html";
+                } else { alert(data.message); }
+            } catch(e) { alert("Сервер недоступен"); }
         }
     </script>
 </body>
