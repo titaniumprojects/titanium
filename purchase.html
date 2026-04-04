@@ -19,7 +19,8 @@
     <a href="index.html">← Назад</a>
 </div>
 <script>
-    document.getElementById('payBtn').onclick = () => {
+    document.getElementById('payBtn').onclick = (e) => {
+        e.preventDefault();
         const amount = document.getElementById('amount').value;
         if(!amount || amount<10) return alert("Минимум 10 ₽");
         alert(`🔗 Ссылка на оплату (крипто-бот):\nСумма ${amount} ₽\nТокен создан. После оплаты средства зачислятся автоматически.`);

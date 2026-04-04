@@ -12,6 +12,7 @@
         button{background:#2ecc2e;border:none;padding:14px 40px;border-radius:40px;font-weight:bold;cursor:pointer;margin-top:20px;}
         a{color:#8bc48b;display:block;margin-top:30px;}
     </style>
+    <script src="config.js"></script>
 </head>
 <body>
 <h2>🎰 VIP РУЛЕТКА</h2>
@@ -22,7 +23,6 @@
 <button id="spinBtn" onclick="doSpin()">КРУТИТЬ</button>
 <a href="index.html">← Назад</a>
 <script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
     const username = localStorage.getItem('username');
     if (!username) window.location.href = "login.html";
 
@@ -47,7 +47,11 @@
                 body:JSON.stringify({username})
             });
             const data = await res.json();
-            if(data.status === "error") { alert(data.message); btn.disabled=false; return; }
+            if(data.status === "error") {
+                alert(data.message);
+                btn.disabled=false;
+                return;
+            }
             const win = data.win;
             const idx = 45;
             const offset = (idx * 150) - (track.parentElement.offsetWidth/2) + 75;
@@ -60,7 +64,10 @@
                 track.style.transition = 'transform 6s cubic-bezier(0.1,0,0.1,1)';
                 track.style.transform = `translateX(-${offset + (Math.random()*40-20)}px)`;
             },20);
-            setTimeout(() => { alert(`🏆 ВЫИГРЫШ: ${win}`); btn.disabled=false; },6200);
+            setTimeout(() => {
+                alert(`🏆 ВЫИГРЫШ: ${win}`);
+                btn.disabled=false;
+            },6200);
         } catch(e) { alert("Ошибка сервера"); btn.disabled=false; }
     }
     init();

@@ -19,12 +19,9 @@
     <a href="index.html">← На главную</a>
 </div>
 <script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
-    const username = localStorage.getItem('username');
-    document.getElementById('changePassBtn').onclick = async () => {
+    document.getElementById('changePassBtn').onclick = () => {
         const newPass = document.getElementById('newPass').value;
         if(newPass.length<4) return alert("Пароль минимум 4 символа");
-        // В server.py добавь эндпоинт /change_password если нужно
         alert("Функция будет добавлена в следующем обновлении");
     };
 </script>

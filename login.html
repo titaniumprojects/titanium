@@ -11,6 +11,7 @@
         button{width:100%;padding:14px;background:#2ecc2e;border:none;border-radius:40px;font-weight:bold;cursor:pointer;}
         a{color:#8bc48b;display:block;margin-top:20px;}
     </style>
+    <script src="config.js"></script>
 </head>
 <body>
 <div class="card">
@@ -21,7 +22,6 @@
     <a href="register.html">Создать аккаунт</a>
 </div>
 <script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
     document.getElementById('loginBtn').onclick = async () => {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
@@ -39,7 +39,7 @@
                 localStorage.setItem('username', data.username);
                 window.location.href = "index.html";
             } else alert(data.message || "Ошибка");
-        }catch(e){ alert("Сервер недоступен"); }
+        } catch(e){ alert("Сервер недоступен"); }
         finally{ btn.disabled=false; btn.innerText="ВОЙТИ"; }
     };
 </script>

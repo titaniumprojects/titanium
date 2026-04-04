@@ -10,6 +10,7 @@
         button{background:#2ecc2e;border:none;padding:12px;border-radius:40px;font-weight:bold;width:100%;cursor:pointer;}
         a{color:#8bc48b;display:block;margin-top:20px;}
     </style>
+    <script src="config.js"></script>
 </head>
 <body>
 <div class="card">
@@ -20,7 +21,6 @@
     <a href="index.html">← На главную</a>
 </div>
 <script>
-    const API = "https://heptarchal-stanton-hemispheric.ngrok-free.dev";
     document.getElementById('giveBtn').onclick = async () => {
         const target = document.getElementById('targetUser').value.trim();
         const amount = parseInt(document.getElementById('giveAmount').value);
