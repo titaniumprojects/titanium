@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Titanium | Главная</title>
-    <link rel="stylesheet" href="style.css"> <!-- Если есть внешний CSS -->
+    <!-- ПРОВЕРЬ: style.css должен лежать рядом с index.html -->
+    <link rel="stylesheet" href="style.css"> 
     <script src="config.js"></script>
-    <!-- Стили из источника[cite: 4] сохранены -->
+    <style>
+        /* Стили из оригинала сохранены, чтобы дизайн не слетал[cite: 4] */
+        body{background:#0a0f0a;color:#cfc;font-family:monospace;display:flex;margin:0;}
+        .sidebar{width:280px;background:#0c120c;border-right:1px solid #1f3a1f;height:100vh;padding:20px;}
+        .nav-item{display:block;padding:12px;color:#8bc48b;text-decoration:none;margin:5px 0;border-radius:12px;}
+        .nav-item:hover, .active{background:#1a2e1a;color:#2ecc2e;}
+        .main{flex:1;padding:30px;}
+        .market-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:20px;}
+        .card{background:#0e150e;border:1px solid #2a4d2a;padding:20px;border-radius:20px;}
+    </style>
 </head>
 <body>
 <div class="sidebar">
-    <div class="logo">TITANIUM</div>
-    <div class="profile-card">
-        <div class="avatar" id="avatarInit">T</div>
+    <div style="font-size:24px; color:#2ecc2e; margin-bottom:30px;">TITANIUM</div>
+    <div id="userInfo" style="margin-bottom:20px;">
         <div id="userName">Загрузка...</div>
-        <div class="status-item"><span>💰 Баланс</span><span id="balanceVal">0 ₽</span></div>
+        <div>💰 Баланс: <span id="balanceVal">0</span> ₽</div>
     </div>
     <nav>
         <a href="index.html" class="nav-item active">🏠 Главная</a>
@@ -22,29 +31,41 @@
         <a href="settings.html" class="nav-item">⚙️ Настройки</a>
         <a href="admin.html" id="adminLink" class="nav-item" style="display:none;">🛠 Админ</a>
     </nav>
-    <div class="logout" onclick="logout()">🚪 Выйти</div>
+    <div onclick="localStorage.clear(); location.href='login.html'" style="cursor:pointer; margin-top:50px; color:#5a7e5a;">🚪 Выйти</div>
 </div>
 <main class="main">
+    <h3>🔥 Товары</h3>
     <div id="marketList" class="market-grid"></div>
 </main>
 <script>
-    const username = localStorage.getItem('username');
-    if (!username) window.location.href = "login.html";
+    const user = localStorage.getItem('username');
+    if (!user) window.location.href = "login.html";
 
-    async function sync() {
-        const res = await fetch(`${API}/login`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({username, password:""})
-        });
-        const data = await res.json();
-        if(data.status === "success") {
-            document.getElementById('balanceVal').innerText = data.balance + " ₽";
+    async function loadData() {
+        try {
+            // Синхронизация профиля[cite: 4]
+            const res = await fetch(`${API}/login`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username: user, password: ""})
+            });
+            const data = await res.json();
             document.getElementById('userName').innerText = data.username;
-            if (data.is_admin) document.getElementById('adminLink').style.display = "flex";
-        }
+            document.getElementById('balanceVal').innerText = data.balance;
+            if(data.is_admin) document.getElementById('adminLink').style.display = "block";
+
+            // Загрузка магазина[cite: 10]
+            const mRes = await fetch(`${API}/api/market`);
+            const items = await mRes.json();
+            document.getElementById('marketList').innerHTML = items.map(i => `
+                <div class="card">
+                    <h4>${i.title}</h4>
+                    <p>${i.price} ₽</p>
+                    <button onclick="location.href='store.html'" style="background:#2ecc2e; border:none; padding:5px 10px; border-radius:10px; cursor:pointer;">Купить</button>
+                </div>
+            `).join('');
+        } catch(e) { console.error("Сервер спит"); }
     }
-    function logout() { localStorage.removeItem('username'); window.location.href="login.html"; }
-    sync();
+    loadData();
 </script>
 </body>
 </html>
