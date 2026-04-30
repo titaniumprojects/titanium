@@ -1,45 +1,46 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Titanium | Регистрация</title>
-    <style>
-        body{background:#0a0f0a;color:#cfc;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}
-        .card{background:#0e150e;border:1px solid #2a4d2a;border-radius:32px;padding:40px;width:340px;text-align:center;}
-        h1{color:#2ecc2e;}
-        input{width:100%;padding:14px;margin:10px 0;background:#0a0f0a;border:1px solid #2a4d2a;color:#cfc;border-radius:40px;}
-        button{width:100%;padding:14px;background:#2ecc2e;border:none;border-radius:40px;font-weight:bold;cursor:pointer;}
-        a{color:#8bc48b;display:block;margin-top:20px;}
-    </style>
-    </head>
-<body>
-<div class="card">
-    <h1>РЕГИСТРАЦИЯ</h1>
-    <input type="text" id="username" placeholder="Логин">
-    <input type="password" id="password" placeholder="Пароль">
-    <button id="regBtn">СОЗДАТЬ</button>
-    <a href="login.html">Уже есть аккаунт</a>
-</div>
+<!-- Вставь это в register.html вместо старого <script> -->
+<script src="config.js"></script>
 <script>
+    let isWaitingCode = false;
+    let userEmail = "";
+
     document.getElementById('regBtn').onclick = async () => {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
-        if(username.length<3 || password.length<4) return alert("Логин мин 3, пароль мин 4");
         const btn = document.getElementById('regBtn');
-        btn.disabled=true; btn.innerText="ОТПРАВКА...";
-        try{
-            const res = await fetch(`${API}/register`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({username, password})
+
+        if (!isWaitingCode) {
+            userEmail = prompt("Введите вашу почту для получения кода:");
+            if (!userEmail) return;
+
+            btn.disabled = true; btn.innerText = "ОТПРАВКА...";
+            try {
+                const res = await fetch(`${API}/register/init`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password, email: userEmail })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    isWaitingCode = true;
+                    btn.disabled = false; btn.innerText = "ПОДТВЕРДИТЬ";
+                    document.getElementById('username').value = "";
+                    document.getElementById('username').placeholder = "Введите код из письма";
+                    document.getElementById('password').style.display = "none";
+                } else alert(data.message);
+            } catch(e) { alert("Сервер недоступен"); }
+            finally { if(!isWaitingCode) btn.disabled = false; }
+        } else {
+            const code = document.getElementById('username').value.trim();
+            const res = await fetch(`${API}/register/confirm`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: userEmail, code: code })
             });
-            const data = await res.json();
-            if(data.status === "success"){
+            if (res.ok) {
                 alert("Аккаунт создан!");
                 window.location.href = "login.html";
-            } else alert(data.message);
-        } catch(e){ alert("Сервер недоступен"); }
-        finally{ btn.disabled=false; btn.innerText="СОЗДАТЬ"; }
+            } else alert("Неверный код");
+        }
     };
 </script>
-</body>
-</html>
