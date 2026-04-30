@@ -1,46 +1,51 @@
-<!-- Вставь это в register.html вместо старого <script> -->
-<script src="config.js"></script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Titanium | Регистрация</title>
+    <script src="config.js"></script>
+    <!-- Стили сохранены[cite: 7] -->
+</head>
+<body>
+<div class="card">
+    <h1 id="regTitle">РЕГИСТРАЦИЯ</h1>
+    <input type="text" id="username" placeholder="Логин">
+    <input type="password" id="password" placeholder="Пароль">
+    <button id="regBtn">ОТПРАВИТЬ КОД</button>
+    <a href="login.html">Уже есть аккаунт</a>
+</div>
 <script>
-    let isWaitingCode = false;
-    let userEmail = "";
+    let step = 1;
+    let email = "";
 
     document.getElementById('regBtn').onclick = async () => {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const btn = document.getElementById('regBtn');
-
-        if (!isWaitingCode) {
-            userEmail = prompt("Введите вашу почту для получения кода:");
-            if (!userEmail) return;
-
-            btn.disabled = true; btn.innerText = "ОТПРАВКА...";
-            try {
-                const res = await fetch(`${API}/register/init`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username, password, email: userEmail })
-                });
-                const data = await res.json();
-                if (data.status === "success") {
-                    isWaitingCode = true;
-                    btn.disabled = false; btn.innerText = "ПОДТВЕРДИТЬ";
-                    document.getElementById('username').value = "";
-                    document.getElementById('username').placeholder = "Введите код из письма";
-                    document.getElementById('password').style.display = "none";
-                } else alert(data.message);
-            } catch(e) { alert("Сервер недоступен"); }
-            finally { if(!isWaitingCode) btn.disabled = false; }
-        } else {
-            const code = document.getElementById('username').value.trim();
-            const res = await fetch(`${API}/register/confirm`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email: userEmail, code: code })
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        if(step === 1) {
+            email = prompt("Введите почту:");
+            if(!email) return;
+            const res = await fetch(`${API}/register/send_code`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({username:u, password:p, email:email})
             });
-            if (res.ok) {
-                alert("Аккаунт создан!");
-                window.location.href = "login.html";
-            } else alert("Неверный код");
+            if(res.ok) {
+                step = 2;
+                document.getElementById('regTitle').innerText = "ВВЕДИТЕ КОД";
+                document.getElementById('username').value = "";
+                document.getElementById('username').placeholder = "Код из консоли";
+                document.getElementById('password').style.display = "none";
+                document.getElementById('regBtn').innerText = "ПОДТВЕРДИТЬ";
+            }
+        } else {
+            const code = document.getElementById('username').value;
+            const res = await fetch(`${API}/register/verify`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({email, code})
+            });
+            if(res.ok) { alert("Готово!"); window.location.href="login.html"; }
+            else alert("Неверный код");
         }
     };
 </script>
+</body>
+</html>
